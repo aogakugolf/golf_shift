@@ -12,6 +12,7 @@ const db = getFirestore(app);
 const MIN_STAFF = 6;
 const MAX_STAFF = 14;
 const MAX_RESCHEDULE_PER_DAY = 5;
+const MY_SHIFT_PER_DAY = 3; // マイシフトに表示する各曜日の件数
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const OPEN_DAYS = ['月', '火', '水', '木', '金', '土'];
 
@@ -1096,10 +1097,11 @@ function renderMyShift() {
     return `<span class="count-pill">${esc(d)}曜枠: <strong>残${remaining}回</strong> (${used}/${MAX_RESCHEDULE_PER_DAY}使用)</span>`;
   }).filter(Boolean).join('');
 
-  // 今後42日（6週間）の予定を走査して自分のシフトを収集
+  // 今後42日（6週間）の予定を走査して自分のシフトを収集（各曜日 直近 MY_SHIFT_PER_DAY 件まで）
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const mySchedules = [];
+  const perDayCount = {};
 
   for (let i = 0; i < 42; i++) {
     const d = new Date(today);
@@ -1108,10 +1110,12 @@ function renderMyShift() {
 
     const dateStr = formatDate(d);
     const dayName = getDayName(dateStr);
+    if ((perDayCount[dayName] || 0) >= MY_SHIFT_PER_DAY) continue;
     const members = getShiftObjectsForDate(dateStr);
     const myItem = members.find(m => normName(m.name) === normName(currentMemberName));
 
     if (myItem) {
+      perDayCount[dayName] = (perDayCount[dayName] || 0) + 1;
       mySchedules.push({
         dateStr,
         dayName,
