@@ -827,14 +827,17 @@ function renderContent() {
 
     let actions = '';
     if (canOperateOn(item.name)) {
+      const specialBtn = `<button class="btn-action" style="border-color:#52796f; color:#52796f;" data-action="special" data-index="${index}">特例申請</button>`;
       if (item.type === 'free') {
         actions = `<button class="btn-action btn-cancel" data-action="remove-free" data-index="${index}">削除</button>`;
       } else if (item.type === 'transfer' || item.type === 'special_transfer') {
-        actions = `<button class="btn-action btn-cancel" data-action="cancel-transfer" data-index="${index}">振替取消</button>`;
+        actions = isSameDayLocked(selectedDateStr, item.originDate)
+          ? specialBtn
+          : `<button class="btn-action btn-cancel" data-action="cancel-transfer" data-index="${index}">振替取消</button>`;
       } else {
-        actions = `
-          <button class="btn-action" data-action="reschedule" data-index="${index}">振替</button>
-          <button class="btn-action" style="border-color:#52796f; color:#52796f;" data-action="special" data-index="${index}">特例申請</button>`;
+        actions = isSameDayLocked(selectedDateStr)
+          ? specialBtn
+          : `<button class="btn-action" data-action="reschedule" data-index="${index}">振替</button>${specialBtn}`;
       }
     }
 
@@ -968,7 +971,7 @@ function transferCardHtml(t) {
       <div class="transfer-card">
         <div class="transfer-card-header">
           <span class="transfer-member-name">${esc(t.name)}</span>
-          ${canOperateOn(t.name) ? `<button class="btn-action btn-cancel" data-hist-cancel data-name="${esc(t.name)}" data-origin="${esc(t.originDate)}" data-target="${esc(t.targetDate)}">取消</button>` : ''}
+          ${canOperateOn(t.name) && !isSameDayLocked(t.originDate, t.targetDate) ? `<button class="btn-action btn-cancel" data-hist-cancel data-name="${esc(t.name)}" data-origin="${esc(t.originDate)}" data-target="${esc(t.targetDate)}">取消</button>` : ''}
         </div>
         <div class="transfer-route">
           <span class="date-pill origin">${esc(t.originDate)}</span>
@@ -1156,14 +1159,18 @@ function renderMyShift() {
               : `<span style="color:var(--primary); font-size:11px;">〇 出勤 ${totalStaff}名</span>`;
 
           let actionButtons = '';
-          if (isFixed) {
-            actionButtons = `
-              <button class="btn-reschedule-quick" onclick="openQuickRescheduleModal('${esc(dateStr)}')">
-                ⇄ この日を振替する
-              </button>
+          const detailBtn = `
               <button class="btn-action" style="font-size:11px; border-color:var(--line); color:var(--text-sub);" onclick="jumpToShiftDetail('${esc(dateStr)}')">
                 詳細・特例申請
               </button>`;
+          const sameDayNote = `<span style="font-size:11px; color:var(--text-sub);">当日の振替・取消は不可</span>`;
+          if (isFixed) {
+            actionButtons = isSameDayLocked(dateStr) ? sameDayNote + detailBtn : `
+              <button class="btn-reschedule-quick" onclick="openQuickRescheduleModal('${esc(dateStr)}')">
+                ⇄ この日を振替する
+              </button>${detailBtn}`;
+          } else if (isTransfer && isSameDayLocked(dateStr, item.originDate)) {
+            actionButtons = sameDayNote + detailBtn;
           } else if (isTransfer) {
             actionButtons = `
               <button class="btn-action btn-cancel" style="font-size:12px;" onclick="cancelReschedule({ name: '${esc(currentMemberName)}', originDate: '${esc(item.originDate || '')}', type: '${esc(item.type)}' }, '${esc(dateStr)}')">
@@ -1218,6 +1225,10 @@ function renderMyShift() {
 }
 
 function openQuickRescheduleModal(originDateStr) {
+  if (isSameDayLocked(originDateStr)) {
+    alert(SAME_DAY_LOCK_MSG);
+    return;
+  }
   quickSelectedOriginDate = originDateStr;
   quickSelectedTargetDate = '';
 
@@ -1444,6 +1455,11 @@ async function confirmQuickReschedule() {
     return;
   }
 
+  if (isSameDayLocked(originDate, targetDate)) {
+    alert(SAME_DAY_LOCK_MSG);
+    return;
+  }
+
   const err = getTransferDateMessage(targetDate, originDate, currentMemberName, false);
   if (err) {
     alert(err);
@@ -1614,6 +1630,16 @@ function checkNotFixedDay(targetDate, name) {
     return `振替できません。曜日を確認してください。\n（${name}さんの固定曜日: ${days.join('・')}）`;
   }
   return '';
+}
+
+/* ---- 当日ロック ----
+   当日（以前）が絡む振替・振替取消は不可（admin除く）。特例申請は当日でも可。 */
+const SAME_DAY_LOCK_MSG = '当日の振替・振替取消はできません。\n必要な場合は「特例申請」を行ってください。';
+
+function isSameDayLocked(...dates) {
+  if (currentUserRole === 'admin') return false;
+  const today = formatDate(new Date());
+  return dates.some(d => d && d <= today);
 }
 
 function setMinDate(inputId) {
@@ -1807,6 +1833,10 @@ function openRescheduleModal(name, index) {
     alert('ご自身のシフトのみ振替できます。');
     return;
   }
+  if (isSameDayLocked(selectedDateStr)) {
+    alert(SAME_DAY_LOCK_MSG);
+    return;
+  }
   const dayName = getDayName(selectedDateStr);
   if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= MAX_RESCHEDULE_PER_DAY) {
     alert(`${name}さんの【${dayName}曜日枠】の振替上限（${MAX_RESCHEDULE_PER_DAY}回）に達しています。\n上限を超える場合は「特例申請」ボタンから管理者に申請してください。`);
@@ -1848,6 +1878,8 @@ function executeReschedule() {
     return;
   }
 
+  if (isSameDayLocked(selectedDateStr, targetDate)) { alert(SAME_DAY_LOCK_MSG); return; }
+
   const err = validateTargetDate(targetDate, selectedDateStr, name);
   if (err) { alert(err); return; }
 
@@ -1883,6 +1915,7 @@ function executeReschedule() {
 // 振替先の日付がルール違反なら理由を返す（通常振替/延長申請の両モーダルで共通）
 function getTransferDateMessage(target, origin, name, extension) {
   if (!target || target === origin) return '';
+  if (isSameDayLocked(target)) return '当日への振替はできません。';
   const msg = validateTargetDate(target, origin, name) || checkNotFixedDay(target, name);
   if (msg) return msg;
   const inWindow = isWithinTransferWindow(target, origin);
@@ -1986,6 +2019,10 @@ function submitExtensionRequest() {
 async function cancelReschedule(item, targetDate = selectedDateStr) {
   if (!canOperateOn(item.name)) {
     alert('ご自身の振替のみ取り消せます。');
+    return;
+  }
+  if (isSameDayLocked(targetDate, item.originDate)) {
+    alert(SAME_DAY_LOCK_MSG);
     return;
   }
   if (!(await askConfirm(`${item.name}さんの振替を取り消し、元に戻しますか？`))) return;
