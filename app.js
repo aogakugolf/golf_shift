@@ -1462,7 +1462,7 @@ async function confirmQuickReschedule() {
     return;
   }
 
-  if (isSameDayLocked(originDate, targetDate)) {
+  if (isSameDayLocked(originDate)) {
     alert(SAME_DAY_LOCK_MSG);
     return;
   }
@@ -1640,7 +1640,7 @@ function checkNotFixedDay(targetDate, name) {
 }
 
 /* ---- 当日ロック ----
-   当日（以前）が絡む振替・振替取消は不可（admin除く）。特例申請は当日でも可。 */
+   当日（以前）の枠からの振替・当日が絡む振替取消は不可（admin除く）。当日への振替と特例申請は可。 */
 const SAME_DAY_LOCK_MSG = '当日の振替・振替取消はできません。\n必要な場合は「特例申請」を行ってください。';
 
 function isSameDayLocked(...dates) {
@@ -1908,7 +1908,7 @@ function executeReschedule() {
     return;
   }
 
-  if (isSameDayLocked(selectedDateStr, targetDate)) { alert(SAME_DAY_LOCK_MSG); return; }
+  if (isSameDayLocked(selectedDateStr)) { alert(SAME_DAY_LOCK_MSG); return; }
   const notOpen = getTransferNotOpenMsg(selectedDateStr);
   if (notOpen) { alert(notOpen); return; }
 
@@ -1947,7 +1947,6 @@ function executeReschedule() {
 // 振替先の日付がルール違反なら理由を返す（通常振替/延長申請の両モーダルで共通）
 function getTransferDateMessage(target, origin, name, extension) {
   if (!target || target === origin) return '';
-  if (isSameDayLocked(target)) return '当日への振替はできません。';
   if (!extension) {
     const notOpen = getTransferNotOpenMsg(origin);
     if (notOpen) return notOpen;
