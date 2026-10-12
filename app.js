@@ -1263,9 +1263,12 @@ function openQuickRescheduleModal(originDateStr) {
     warnMsg = `現在 ${originDateStr} は出勤者が ${totalStaff} 名です。振替すると ${totalStaff - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。先に代理メンバーを立ててください。`;
   }
 
+  const notOpen = getTransferNotOpenMsg(originDateStr);
   if (warningDiv) {
     if (isBlocked) {
       warningDiv.innerHTML = `<div class="staff-alert-banner">⚠️ <strong>振替不可:</strong><br>${esc(warnMsg)}</div>`;
+    } else if (notOpen) {
+      warningDiv.innerHTML = `<div class="staff-alert-banner">⏰ ${esc(notOpen)}<br>受付開始前でも「振替日程延長」の申請は可能です。</div>`;
     } else {
       warningDiv.innerHTML = '';
     }
@@ -1646,6 +1649,27 @@ function isSameDayLocked(...dates) {
   return dates.some(d => d && d <= today);
 }
 
+/* ---- 振替受付開始 ----
+   通常振替は振替元の日の TRANSFER_OPEN_DAYS 日前 TRANSFER_OPEN_HOUR:00 から可能（admin除く）。
+   振替日程延長申請・特例申請はいつでも可。 */
+const TRANSFER_OPEN_DAYS = 14;
+const TRANSFER_OPEN_HOUR = 8;
+
+function getTransferOpenTime(originDate) {
+  const d = new Date(originDate.replace(/-/g, '/'));
+  d.setDate(d.getDate() - TRANSFER_OPEN_DAYS);
+  d.setHours(TRANSFER_OPEN_HOUR, 0, 0, 0);
+  return d;
+}
+
+// 受付開始前ならメッセージを返す
+function getTransferNotOpenMsg(originDate) {
+  if (currentUserRole === 'admin' || !originDate) return '';
+  const open = getTransferOpenTime(originDate);
+  if (new Date() >= open) return '';
+  return `この日の振替受付は ${open.getMonth() + 1}月${open.getDate()}日 ${TRANSFER_OPEN_HOUR}:00 からです。`;
+}
+
 function setMinDate(inputId) {
   document.getElementById(inputId).min = formatDate(new Date());
 }
@@ -1858,7 +1882,9 @@ function openRescheduleModal(name, index) {
   setExtensionMode(false);
   const w = getTransferWindow(selectedDateStr);
   const hint = document.getElementById('reschedule-range-hint');
-  if (hint) hint.textContent = `振替可能期間: ${w.min} 〜 ${w.max}（ご自身の固定曜日を除く）`;
+  const notOpen = getTransferNotOpenMsg(selectedDateStr);
+  if (hint) hint.innerHTML = `振替可能期間: ${esc(w.min)} 〜 ${esc(w.max)}（ご自身の固定曜日を除く）`
+    + (notOpen ? `<br><span style="color:var(--danger);">※${esc(notOpen)}（振替日程延長の申請は可能）</span>` : '');
   updateRescheduleDateMessage();
   document.getElementById('reschedule-modal').style.display = 'flex';
 }
@@ -1883,6 +1909,8 @@ function executeReschedule() {
   }
 
   if (isSameDayLocked(selectedDateStr, targetDate)) { alert(SAME_DAY_LOCK_MSG); return; }
+  const notOpen = getTransferNotOpenMsg(selectedDateStr);
+  if (notOpen) { alert(notOpen); return; }
 
   const err = validateTargetDate(targetDate, selectedDateStr, name);
   if (err) { alert(err); return; }
@@ -1920,6 +1948,10 @@ function executeReschedule() {
 function getTransferDateMessage(target, origin, name, extension) {
   if (!target || target === origin) return '';
   if (isSameDayLocked(target)) return '当日への振替はできません。';
+  if (!extension) {
+    const notOpen = getTransferNotOpenMsg(origin);
+    if (notOpen) return notOpen;
+  }
   const msg = validateTargetDate(target, origin, name) || checkNotFixedDay(target, name);
   if (msg) return msg;
   const inWindow = isWithinTransferWindow(target, origin);
