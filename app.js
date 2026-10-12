@@ -418,10 +418,12 @@ function updateRoleUI() {
   const isAdmin = currentUserRole === 'admin';
   const isExec = currentUserRole === 'executive';
   const hasMenu = isAdmin || isExec;
+  // メニューはログイン中の全員に表示。管理系の項目（.staff-only）は admin / 幹部のみ
   const adminMenuArea = document.getElementById('admin-menu-area');
-  const userMenuArea = document.getElementById('user-menu-area');
-  if (adminMenuArea) adminMenuArea.style.display = hasMenu ? 'block' : 'none';
-  if (userMenuArea) userMenuArea.style.display = hasMenu ? 'none' : 'block';
+  if (adminMenuArea) adminMenuArea.style.display = currentMemberName ? 'block' : 'none';
+  document.querySelectorAll('#admin-menu-area .staff-only').forEach(el => {
+    el.style.display = hasMenu ? '' : 'none';
+  });
 
   const headerUserInfo = document.getElementById('header-user-info');
   if (headerUserInfo) {
@@ -433,13 +435,7 @@ function updateRoleUI() {
     }
   }
 
-  const itemRoles = document.getElementById('item-roles');
-  const itemMaster = document.getElementById('item-master');
-  const itemData = document.getElementById('item-data');
   // 幹部もadminと同じメニューを表示（データ管理の操作・adminへの権限変更は各処理で管理者のみに制限）
-  if (itemRoles) itemRoles.style.display = hasMenu ? 'block' : 'none';
-  if (itemMaster) itemMaster.style.display = hasMenu ? 'block' : 'none';
-  if (itemData) itemData.style.display = hasMenu ? 'block' : 'none';
 }
 
 function closeModal(id) {
@@ -2088,6 +2084,84 @@ async function cancelReschedule(item, targetDate = selectedDateStr) {
 
 
 /* ============ データ管理 ============ */
+/* ============ ルール確認（config/rules。閲覧は全員、編集は admin / 幹部） ============ */
+const RULES_MAX_LENGTH = 5000;
+let rulesData = { text: '', updatedAt: '', updatedBy: '' };
+
+function renderRulesView() {
+  const textEl = document.getElementById('rules-text');
+  const metaEl = document.getElementById('rules-meta');
+  const hasText = !!rulesData.text.trim();
+  textEl.textContent = hasText ? rulesData.text : 'ルールはまだ登録されていません。';
+  textEl.classList.toggle('empty', !hasText);
+  metaEl.textContent = rulesData.updatedAt
+    ? `最終更新: ${rulesData.updatedAt}${rulesData.updatedBy ? `（${rulesData.updatedBy}）` : ''}`
+    : '';
+}
+
+function setRulesEditMode(on) {
+  const staff = isStaffRole();
+  const show = (id, v) => { const el = document.getElementById(id); if (el) el.style.display = v ? '' : 'none'; };
+  show('rules-view', !on);
+  show('rules-edit', on);
+  show('rules-edit-btn', staff && !on);
+  show('rules-cancel-btn', on);
+  show('rules-save-btn', on);
+  show('rules-close-btn', !on);
+}
+
+async function openRulesModal() {
+  document.getElementById('dropdown-menu').classList.remove('show');
+  setRulesEditMode(false);
+  document.getElementById('rules-text').textContent = '読み込み中...';
+  document.getElementById('rules-meta').textContent = '';
+  document.getElementById('rules-modal').style.display = 'flex';
+  try {
+    const snap = await getDoc(doc(db, 'config', 'rules'));
+    const d = snap.exists() ? snap.data() : {};
+    rulesData = {
+      text: typeof d.text === 'string' ? d.text : '',
+      updatedAt: typeof d.updatedAt === 'string' ? d.updatedAt : '',
+      updatedBy: typeof d.updatedBy === 'string' ? d.updatedBy : ''
+    };
+    renderRulesView();
+  } catch (e) {
+    console.warn('Rules load failed:', e);
+    document.getElementById('rules-text').textContent = 'ルールの読み込みに失敗しました。通信状況を確認してください。';
+  }
+}
+
+function startRulesEdit() {
+  if (!requireStaff()) return;
+  document.getElementById('rules-input').value = rulesData.text;
+  setRulesEditMode(true);
+}
+
+function cancelRulesEdit() {
+  setRulesEditMode(false);
+}
+
+async function saveRules() {
+  if (!requireStaff()) return;
+  const text = document.getElementById('rules-input').value;
+  if (text.length > RULES_MAX_LENGTH) {
+    alert(`ルールは${RULES_MAX_LENGTH}文字以内で入力してください。`);
+    return;
+  }
+  const next = { text, updatedAt: new Date().toLocaleString('ja-JP'), updatedBy: currentMemberName || '' };
+  try {
+    await setDoc(doc(db, 'config', 'rules'), next);
+  } catch (e) {
+    console.warn('Rules save failed:', e);
+    alert('ルールの保存に失敗しました。もう一度お試しください。');
+    return;
+  }
+  rulesData = next;
+  renderRulesView();
+  setRulesEditMode(false);
+  alert('ルールを保存しました。');
+}
+
 function openDataModal() {
   document.getElementById('dropdown-menu').classList.remove('show');
   if (!requireAdmin()) return;
@@ -2253,6 +2327,7 @@ if ('serviceWorker' in navigator) {
 // type="module" ではHTMLのonclickから関数が見えないので、windowに公開する
 Object.assign(window, {
   handleLogin, handleLogout, toggleDropdownMenu, openRequestsModal, openMasterConfig,
+  openRulesModal, startRulesEdit, cancelRulesEdit, saveRules,
   openDataModal, changeWeek, addFreeShift, toggleReqTypeUI, closeModal, submitSpecialRequest,
   saveMasterConfig, executeReschedule, exportData, importData, resetRescheduleCounts, resetAllData,
   switchView, changeCalendarMonth, onCalendarDateClick,

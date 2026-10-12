@@ -174,16 +174,14 @@
     .dropdown-item:active { background-color: var(--primary-light); }
     .dropdown-item.logout-item { color: var(--danger); }
 
-    .btn-logout-only {
-      background: rgba(217, 4, 41, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      color: #ffffff;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
+    .rules-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
+    .rules-text.empty { color: var(--text-sub); text-align: center; padding: 20px 0; }
 
     .week-nav {
       display: flex;
@@ -786,7 +784,7 @@
     header > div:first-child { min-width: 0; }
     header h1 { font-size: clamp(16px, 4.6vw, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     header .sub-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .menu-container, #user-menu-area { flex-shrink: 0; margin-left: 8px; }
+    .menu-container { flex-shrink: 0; margin-left: 8px; }
     .dropdown-menu { width: min(190px, 70vw); }
 
     /* モーダルは画面の高さ・幅に収める（横向きスマホ対応で dvh も使用） */
@@ -916,28 +914,24 @@
   </div>
 
   <div style="display: flex; align-items: center; gap: 8px;">
-    <!-- 管理者用メニュー -->
+    <!-- メニュー（全員共通。管理系の項目は admin / 幹部のみ表示） -->
     <div class="menu-container" id="admin-menu-area" style="display:none;">
       <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">
         メニュー
-        <span class="menu-badge" id="menu-badge">0</span>
+        <span class="menu-badge staff-only" id="menu-badge">0</span>
       </button>
 
       <div class="dropdown-menu" id="dropdown-menu">
-        <button class="dropdown-item" id="item-requests" onclick="openRequestsModal()">
+        <button class="dropdown-item" onclick="openRulesModal()">ルール確認</button>
+        <button class="dropdown-item staff-only" id="item-requests" onclick="openRequestsModal()">
           申請管理
           <span class="menu-badge" id="dropdown-req-badge">0</span>
         </button>
-        <button class="dropdown-item" id="item-roles" onclick="openRolesModal()">管理権限</button>
-        <button class="dropdown-item" id="item-master" onclick="openMasterConfig()">固定設定</button>
-        <button class="dropdown-item" id="item-data" onclick="openDataModal()">データ管理</button>
+        <button class="dropdown-item staff-only" id="item-roles" onclick="openRolesModal()">管理権限</button>
+        <button class="dropdown-item staff-only" id="item-master" onclick="openMasterConfig()">固定設定</button>
+        <button class="dropdown-item staff-only" id="item-data" onclick="openDataModal()">データ管理</button>
         <button class="dropdown-item logout-item" onclick="handleLogout()">ログアウト</button>
       </div>
-    </div>
-
-    <!-- 一般ユーザー用 -->
-    <div id="user-menu-area" style="display:none;">
-      <button class="btn-logout-only" onclick="handleLogout()">ログアウト</button>
     </div>
   </div>
 </header>
@@ -1188,6 +1182,30 @@
 </div>
 
 <!-- データ管理モーダル -->
+<!-- ルール確認（閲覧は全員、編集は admin / 幹部） -->
+<div class="modal" id="rules-modal">
+  <div class="modal-content">
+    <div class="modal-title">ルール確認</div>
+
+    <div id="rules-view">
+      <div id="rules-text" class="rules-text"></div>
+      <div id="rules-meta" class="form-hint" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="form-group" id="rules-edit" style="display:none;">
+      <label for="rules-input">ルール本文</label>
+      <textarea id="rules-input" rows="14" maxlength="5000" placeholder="振替のルールや注意事項を入力してください"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-action" id="rules-edit-btn" style="display:none;" onclick="startRulesEdit()">編集</button>
+      <button class="btn-action" id="rules-cancel-btn" style="display:none; border-color: var(--border); color: var(--text-sub);" onclick="cancelRulesEdit()">キャンセル</button>
+      <button class="btn-main" id="rules-save-btn" style="display:none; padding: 8px 16px; flex: initial;" onclick="saveRules()">保存する</button>
+      <button class="btn-action" id="rules-close-btn" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('rules-modal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="data-modal">
   <div class="modal-content">
     <div class="modal-title">データ管理・バックアップ</div>
@@ -1214,6 +1232,6 @@
   </div>
 </div>
 
-<script type="module" src="app.js?v=17"></script>
+<script type="module" src="app.js?v=18"></script>
 </body>
 </html>
