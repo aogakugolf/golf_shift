@@ -1578,6 +1578,7 @@
           </button>
           <button class="dropdown-item staff-only" id="item-roles" onclick="openRolesModal()">管理権限</button>
           <button class="dropdown-item staff-only" id="item-master" onclick="openMasterConfig()">固定設定</button>
+          <button class="dropdown-item staff-only" onclick="openLimitModal()">振替回数設定</button>
           <button class="dropdown-item staff-only" id="item-data" onclick="openDataModal()">データ管理</button>
           <button class="dropdown-item logout-item" onclick="handleLogout()">ログアウト</button>
         </div>
@@ -1823,6 +1824,22 @@
   </div>
 
   <!-- データ管理モーダル -->
+  <!-- 振替回数設定（admin / 幹部） -->
+  <div class="modal" id="limit-modal">
+    <div class="modal-content">
+      <div class="modal-title">振替回数設定</div>
+      <div class="form-group">
+        <label for="limit-input">今期の振替可能回数（1人・曜日ごと）</label>
+        <input type="number" id="limit-input" min="0" max="99" step="1" inputmode="numeric">
+        <div class="form-hint">前期・後期の切り替え時に変更してください。変更は全員に即時反映されます。使用済み回数はリセットされません（必要な場合は「データ管理」から初期化）。</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('limit-modal')">キャンセル</button>
+        <button class="btn-main" style="padding: 8px 16px; flex: initial;" onclick="saveLimit()">保存する</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ルール確認（閲覧は全員、編集は admin / 幹部） -->
   <div class="modal" id="rules-modal">
     <div class="modal-content">
@@ -1878,7 +1895,7 @@
     </div>
   </div>
 
-  <script type="module" src="app.js?v=21"></script>
+  <script type="module" src="app.js?v=22"></script>
 </body>
 
 </html>

@@ -11,7 +11,8 @@ const db = getFirestore(app);
 
 const MIN_STAFF = 6;
 const MAX_STAFF = 14;
-const MAX_RESCHEDULE_PER_DAY = 5;
+const DEFAULT_MAX_RESCHEDULE = 5; // 未設定時の曜日ごとの振替上限
+let maxReschedulePerDay = DEFAULT_MAX_RESCHEDULE; // 今期の上限（config/settings で幹部・管理者が設定）
 const MY_SHIFT_PER_DAY = 3; // マイシフトに表示する各曜日の件数
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const OPEN_DAYS = ['月', '火', '水', '木', '金', '土'];
@@ -340,6 +341,13 @@ function startListeners(isAdmin) {
     render();
   }, onErr));
 
+  unsubs.push(onSnapshot(doc(db, 'config', 'settings'), snap => {
+    const n = snap.exists() ? snap.data().maxReschedule : undefined;
+    maxReschedulePerDay = isValidMaxReschedule(n) ? n : DEFAULT_MAX_RESCHEDULE;
+    updateRoleUI();
+    render();
+  }, onErr));
+
   if (isAdmin) { // 申請およびユーザー権限一覧は管理者/幹部だけが読める。
     unsubs.push(onSnapshot(query(collection(db, 'requests'), orderBy('id', 'desc'), limit(50)), snap => {
       pendingRequests = snap.docs.map(d => d.data()).sort((a, b) => a.id - b.id);
@@ -429,9 +437,9 @@ function updateRoleUI() {
   if (headerUserInfo) {
     if (currentMemberName) {
       const roleStr = ROLE_LABELS[currentUserRole] || 'ユーザー';
-      headerUserInfo.innerHTML = `<strong>${esc(currentMemberName)}</strong> さん（${roleStr}）| 曜日ごとに5回まで振替可能`;
+      headerUserInfo.innerHTML = `<strong>${esc(currentMemberName)}</strong> さん（${roleStr}）| 曜日ごとに${maxReschedulePerDay}回まで振替可能`;
     } else {
-      headerUserInfo.textContent = '曜日ごとに1人5回まで振替可能';
+      headerUserInfo.textContent = `曜日ごとに1人${maxReschedulePerDay}回まで振替可能`;
     }
   }
 
@@ -811,7 +819,7 @@ function renderContent() {
 
   document.getElementById('member-list').innerHTML = ordered.map(({ item, index }) => {
     const used = getRescheduleUsed(item.name, dayName);
-    const remaining = Math.max(0, MAX_RESCHEDULE_PER_DAY - used);
+    const remaining = Math.max(0, maxReschedulePerDay - used);
 
     let tag = '';
     if (item.type === 'transfer') {
@@ -842,7 +850,7 @@ function renderContent() {
       <div class="member-card${isMine(item) ? ' mine' : ''}">
         <div class="member-info">
           <div><span class="member-name">${esc(item.name)}</span>${tag}</div>
-          <span class="member-sub">${esc(dayName)}曜枠 振替残: ${remaining} / ${MAX_RESCHEDULE_PER_DAY} 回</span>
+          <span class="member-sub">${esc(dayName)}曜枠 振替残: ${remaining} / ${maxReschedulePerDay} 回</span>
         </div>
         <div class="action-group">${actions}</div>
       </div>`;
@@ -1088,9 +1096,9 @@ function renderMyShift() {
   const countsHtml = OPEN_DAYS.map(d => {
     const isMyDay = myFixedDays.includes(d);
     const used = getRescheduleUsed(currentMemberName, d);
-    const remaining = Math.max(0, MAX_RESCHEDULE_PER_DAY - used);
+    const remaining = Math.max(0, maxReschedulePerDay - used);
     if (!isMyDay && used === 0) return '';
-    return `<span class="count-pill">${esc(d)}曜枠: <strong>残${remaining}回</strong> (${used}/${MAX_RESCHEDULE_PER_DAY}使用)</span>`;
+    return `<span class="count-pill">${esc(d)}曜枠: <strong>残${remaining}回</strong> (${used}/${maxReschedulePerDay}使用)</span>`;
   }).filter(Boolean).join('');
 
   // 今後42日（6週間）の予定を走査して自分のシフトを収集（各曜日 直近 MY_SHIFT_PER_DAY 件まで）
@@ -1243,9 +1251,9 @@ function openQuickRescheduleModal(originDateStr) {
   let warnMsg = '';
 
   // 振替上限チェック
-  if (currentUserRole !== 'admin' && used >= MAX_RESCHEDULE_PER_DAY) {
+  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
     isBlocked = true;
-    warnMsg = `【${dayName}曜日枠】の振替上限（${MAX_RESCHEDULE_PER_DAY}回）に達しています。これ以上振替できません。特別振替が必要な場合は「特例申請」を行ってください。`;
+    warnMsg = `【${dayName}曜日枠】の振替上限（${maxReschedulePerDay}回）に達しています。これ以上振替できません。特別振替が必要な場合は「特例申請」を行ってください。`;
   }
   // 回答A2の人数制限チェック（従来通り6名未満になる場合は振替を禁止）
   else if (currentUserRole !== 'admin' && totalStaff - 1 < MIN_STAFF) {
@@ -1419,7 +1427,7 @@ function submitQuickExtension() {
   if (reason.length > 200) { alert('理由は200文字以内で入力してください。'); return; }
 
   const dayName = getDayName(originDate);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(currentMemberName, dayName) >= MAX_RESCHEDULE_PER_DAY) {
+  if (currentUserRole !== 'admin' && getRescheduleUsed(currentMemberName, dayName) >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
@@ -1466,8 +1474,8 @@ async function confirmQuickReschedule() {
   const dayName = getDayName(originDate);
   const used = getRescheduleUsed(currentMemberName, dayName);
 
-  if (currentUserRole !== 'admin' && used >= MAX_RESCHEDULE_PER_DAY) {
-    alert(`${dayName}曜日枠の振替上限（${MAX_RESCHEDULE_PER_DAY}回）に達しています。`);
+  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
+    alert(`${dayName}曜日枠の振替上限（${maxReschedulePerDay}回）に達しています。`);
     return;
   }
 
@@ -1492,7 +1500,7 @@ async function confirmQuickReschedule() {
   await saveStorage();
 
   const targetD = new Date(targetDate.replace(/-/g, '/'));
-  alert(`${currentMemberName}さんを ${targetD.getMonth() + 1}月${targetD.getDate()}日 (${getDayName(targetDate)}) へ振り替えました！\n（${dayName}曜枠 残り: ${Math.max(0, MAX_RESCHEDULE_PER_DAY - (used + 1))}回）`);
+  alert(`${currentMemberName}さんを ${targetD.getMonth() + 1}月${targetD.getDate()}日 (${getDayName(targetDate)}) へ振り替えました！\n（${dayName}曜枠 残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
 }
 
 function jumpToShiftDetail(dateStr) {
@@ -1826,8 +1834,8 @@ function openRescheduleModal(name, index) {
     return;
   }
   const dayName = getDayName(selectedDateStr);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= MAX_RESCHEDULE_PER_DAY) {
-    alert(`${name}さんの【${dayName}曜日枠】の振替上限（${MAX_RESCHEDULE_PER_DAY}回）に達しています。\n上限を超える場合は「特例申請」ボタンから管理者に申請してください。`);
+  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
+    alert(`${name}さんの【${dayName}曜日枠】の振替上限（${maxReschedulePerDay}回）に達しています。\n上限を超える場合は「特例申請」ボタンから管理者に申請してください。`);
     return;
   }
   if (currentUserRole !== 'admin' && getShiftObjectsForDate(selectedDateStr).length - 1 < MIN_STAFF) {
@@ -1884,7 +1892,7 @@ function executeReschedule() {
 
   const dayName = getDayName(selectedDateStr);
   const used = getRescheduleUsed(name, dayName);
-  if (currentUserRole !== 'admin' && used >= MAX_RESCHEDULE_PER_DAY) {
+  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
@@ -1901,7 +1909,7 @@ function executeReschedule() {
 
   closeModal('reschedule-modal');
   saveStorage();
-  alert(`${name}さんを ${targetDate} へ振替しました。\n（${dayName}曜枠 振替残り: ${Math.max(0, MAX_RESCHEDULE_PER_DAY - (used + 1))}回）`);
+  alert(`${name}さんを ${targetDate} へ振替しました。\n（${dayName}曜枠 振替残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
 }
 
 // 振替先の日付がルール違反なら理由を返す（通常振替/延長申請の両モーダルで共通）
@@ -1991,7 +1999,7 @@ function submitExtensionRequest() {
   if (reason.length > 200) { alert('理由は200文字以内で入力してください。'); return; }
 
   const dayName = getDayName(selectedDateStr);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= MAX_RESCHEDULE_PER_DAY) {
+  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
@@ -2048,6 +2056,44 @@ async function cancelReschedule(item, targetDate = selectedDateStr) {
 
 
 /* ============ データ管理 ============ */
+/* ============ 振替回数設定（config/settings。前期・後期ごとに admin / 幹部が設定） ============ */
+const MAX_RESCHEDULE_LIMIT = 99;
+
+function isValidMaxReschedule(n) {
+  return Number.isInteger(n) && n >= 0 && n <= MAX_RESCHEDULE_LIMIT;
+}
+
+function openLimitModal() {
+  document.getElementById('dropdown-menu').classList.remove('show');
+  if (!requireStaff()) return;
+  document.getElementById('limit-input').value = maxReschedulePerDay;
+  document.getElementById('limit-modal').style.display = 'flex';
+}
+
+async function saveLimit() {
+  if (!requireStaff()) return;
+  const raw = document.getElementById('limit-input').value.trim();
+  const n = Number(raw);
+  if (raw === '' || !isValidMaxReschedule(n)) {
+    alert(`振替可能回数は0〜${MAX_RESCHEDULE_LIMIT}の整数で入力してください。`);
+    return;
+  }
+  if (!(await askConfirm(`今期の振替可能回数を「曜日ごとに${n}回」に変更しますか？\n（全員に即時反映されます）`))) return;
+  try {
+    await setDoc(doc(db, 'config', 'settings'), {
+      maxReschedule: n,
+      updatedAt: new Date().toLocaleString('ja-JP'),
+      updatedBy: currentMemberName || ''
+    }, { merge: true });
+  } catch (e) {
+    console.warn('Limit save failed:', e);
+    alert('保存に失敗しました。もう一度お試しください。');
+    return;
+  }
+  closeModal('limit-modal');
+  alert(`今期の振替可能回数を曜日ごとに${n}回に設定しました。`);
+}
+
 /* ============ ルール確認（config/rules。閲覧は全員、編集は admin / 幹部） ============ */
 const RULES_MAX_LENGTH = 5000;
 let rulesData = { text: '', updatedAt: '', updatedBy: '' };
@@ -2291,7 +2337,7 @@ if ('serviceWorker' in navigator) {
 // type="module" ではHTMLのonclickから関数が見えないので、windowに公開する
 Object.assign(window, {
   handleLogin, handleLogout, toggleDropdownMenu, openRequestsModal, openMasterConfig,
-  openRulesModal, startRulesEdit, cancelRulesEdit, saveRules,
+  openRulesModal, startRulesEdit, cancelRulesEdit, saveRules, openLimitModal, saveLimit,
   openDataModal, changeWeek, addFreeShift, toggleReqTypeUI, closeModal, submitSpecialRequest,
   saveMasterConfig, executeReschedule, exportData, importData, resetRescheduleCounts, resetAllData,
   switchView, changeCalendarMonth, onCalendarDateClick,
