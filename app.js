@@ -1264,7 +1264,7 @@ function openQuickRescheduleModal(originDateStr) {
     if (isBlocked) {
       warningDiv.innerHTML = `<div class="staff-alert-banner">⚠️ <strong>振替不可:</strong><br>${esc(warnMsg)}</div>`;
     } else if (notOpen) {
-      warningDiv.innerHTML = `<div class="staff-alert-banner">⏰ ${esc(notOpen)}<br>受付開始前でも「振替日程延長」の申請は可能です。</div>`;
+      warningDiv.innerHTML = `<div class="staff-alert-banner">⏰ ${esc(notOpen)}<br>受付時間外でも「振替日程延長」の申請は可能です。</div>`;
     } else {
       warningDiv.innerHTML = '';
     }
@@ -1645,11 +1645,13 @@ function isSameDayLocked(...dates) {
   return dates.some(d => d && d <= today);
 }
 
-/* ---- 振替受付開始 ----
-   通常振替は振替元の日の TRANSFER_OPEN_DAYS 日前 TRANSFER_OPEN_HOUR:00 から可能（admin除く）。
-   振替日程延長申請・特例申請はいつでも可。 */
+/* ---- 振替受付開始・受付時間 ----
+   通常振替は振替元の日の TRANSFER_OPEN_DAYS 日前 TRANSFER_OPEN_HOUR:00 から可能。
+   また毎日 TRANSFER_OPEN_HOUR:00〜TRANSFER_CLOSE_HOUR:00 の間のみ可能（いずれも admin除く）。
+   振替日程延長申請・特例申請・振替取消は時間外でも可。 */
 const TRANSFER_OPEN_DAYS = 14;
 const TRANSFER_OPEN_HOUR = 8;
+const TRANSFER_CLOSE_HOUR = 20;
 
 function getTransferOpenTime(originDate) {
   const d = new Date(originDate.replace(/-/g, '/'));
@@ -1658,12 +1660,19 @@ function getTransferOpenTime(originDate) {
   return d;
 }
 
-// 受付開始前ならメッセージを返す
+// 受付開始前・受付時間外ならメッセージを返す
 function getTransferNotOpenMsg(originDate) {
   if (currentUserRole === 'admin' || !originDate) return '';
+  const now = new Date();
   const open = getTransferOpenTime(originDate);
-  if (new Date() >= open) return '';
-  return `この日の振替受付は ${open.getMonth() + 1}月${open.getDate()}日 ${TRANSFER_OPEN_HOUR}:00 からです。`;
+  if (now < open) {
+    return `この日の振替受付は ${open.getMonth() + 1}月${open.getDate()}日 ${TRANSFER_OPEN_HOUR}:00 からです。`;
+  }
+  const hour = now.getHours();
+  if (hour < TRANSFER_OPEN_HOUR || hour >= TRANSFER_CLOSE_HOUR) {
+    return `振替の受付時間は毎日 ${TRANSFER_OPEN_HOUR}:00〜${TRANSFER_CLOSE_HOUR}:00 です。`;
+  }
+  return '';
 }
 
 function setMinDate(inputId) {
