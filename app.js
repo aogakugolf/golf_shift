@@ -1127,12 +1127,9 @@ function renderMyShift() {
     scheduleListHtml = `
       <div style="text-align: center; padding: 24px 16px; background: #fff; border: 1px dashed var(--line); border-radius: 10px;">
         <p style="font-size: 13px; font-weight: bold; color: var(--text);">直近の出勤予定が登録されていません</p>
-        <p style="font-size: 11px; color: var(--text-sub); margin-top: 4px; margin-bottom: 12px;">
-          担当の曜日（固定枠）を登録すると、毎週の予定が自動表示され振替できるようになります。
+        <p style="font-size: 11px; color: var(--text-sub); margin-top: 4px;">
+          担当の曜日（固定枠）は幹部・管理者が設定します。
         </p>
-        <button class="btn-main" style="font-size: 12px; padding: 6px 14px; margin: auto;" onclick="openMyFixedDayModal()">
-          ＋ 出勤担当曜日（固定枠）を設定する
-        </button>
       </div>`;
   } else {
     scheduleListHtml = `
@@ -1210,9 +1207,6 @@ function renderMyShift() {
           </div>
           <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">
             固定出勤: ${myFixedDays.length > 0 ? myFixedDays.map(d => d + '曜').join('・') : '未設定'}
-            <button type="button" style="background:none; border:none; color:var(--primary); font-size:11px; font-weight:bold; cursor:pointer; text-decoration:underline; margin-left:4px;" onclick="openMyFixedDayModal()">
-              [変更/登録]
-            </button>
           </div>
         </div>
       </div>
@@ -1499,46 +1493,6 @@ async function confirmQuickReschedule() {
 
   const targetD = new Date(targetDate.replace(/-/g, '/'));
   alert(`${currentMemberName}さんを ${targetD.getMonth() + 1}月${targetD.getDate()}日 (${getDayName(targetDate)}) へ振り替えました！\n（${dayName}曜枠 残り: ${Math.max(0, MAX_RESCHEDULE_PER_DAY - (used + 1))}回）`);
-}
-
-function openMyFixedDayModal() {
-  if (!currentMemberName) {
-    alert('ログインしてください。');
-    return;
-  }
-  const currentDays = OPEN_DAYS.filter(d => (masterConfig[d] || []).map(normName).includes(normName(currentMemberName)));
-
-  const checkboxes = document.querySelectorAll('input[name="my-day"]');
-  checkboxes.forEach(cb => {
-    cb.checked = currentDays.includes(cb.value);
-  });
-
-  const modal = document.getElementById('my-fixed-day-modal');
-  if (modal) modal.style.display = 'flex';
-}
-
-async function saveMyFixedDays() {
-  if (!currentMemberName) return;
-  const checkedDays = Array.from(document.querySelectorAll('input[name="my-day"]:checked')).map(cb => cb.value);
-
-  // masterConfig を更新
-  OPEN_DAYS.forEach(d => {
-    if (!masterConfig[d]) masterConfig[d] = [];
-
-    const normList = masterConfig[d].map(normName);
-    const hasMe = normList.includes(normName(currentMemberName));
-
-    if (checkedDays.includes(d)) {
-      if (!hasMe) masterConfig[d].push(currentMemberName);
-    } else {
-      if (hasMe) masterConfig[d] = masterConfig[d].filter(n => normName(n) !== normName(currentMemberName));
-    }
-  });
-
-  dirty.master = true;
-  closeModal('my-fixed-day-modal');
-  await saveStorage();
-  alert('出勤担当曜日の設定を保存しました！');
 }
 
 function jumpToShiftDetail(dateStr) {
@@ -2343,5 +2297,5 @@ Object.assign(window, {
   toggleExtensionMode, submitExtensionRequest, openAllHistory, showSignup, showLogin, handleSignup, openRolesModal, changeUserRole, sendPasswordResetEmailForUser, deleteUserAccount, toggleUserDetail,
   addMasterMember, removeMasterMember,
   renderMyShift, openQuickRescheduleModal, toggleQuickExtensionMode, submitQuickExtension, selectQuickTargetDate, onQuickCustomDateSelect, confirmQuickReschedule,
-  openMyFixedDayModal, saveMyFixedDays, jumpToShiftDetail, cancelReschedule, removeFreeShift
+  jumpToShiftDetail, cancelReschedule, removeFreeShift
 });
