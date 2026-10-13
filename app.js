@@ -246,14 +246,6 @@ function requireStaff() {
   return true;
 }
 
-function requireAdmin() {
-  if (currentUserRole !== 'admin') {
-    alert('管理者のみ実行できます。');
-    return false;
-  }
-  return true;
-}
-
 function toggleDropdownMenu(e) {
   e.stopPropagation();
   document.getElementById('dropdown-menu').classList.toggle('show');
@@ -443,7 +435,7 @@ function updateRoleUI() {
     }
   }
 
-  // 幹部もadminと同じメニューを表示（データ管理の操作・adminへの権限変更は各処理で管理者のみに制限）
+  // 幹部もadminと同じメニューを表示（adminへの権限変更は各処理で管理者のみに制限）
 }
 
 function closeModal(id) {
@@ -2174,12 +2166,12 @@ async function saveRules() {
 
 function openDataModal() {
   document.getElementById('dropdown-menu').classList.remove('show');
-  if (!requireAdmin()) return;
+  if (!requireStaff()) return;
   document.getElementById('data-modal').style.display = 'flex';
 }
 
 function exportData() {
-  if (!requireAdmin()) return;
+  if (!requireStaff()) return;
   const backup = {
     version: 2,
     masterConfig,
@@ -2198,7 +2190,7 @@ function exportData() {
 }
 
 function importData(event) {
-  if (!requireAdmin()) return;
+  if (!requireStaff()) return;
   const input = event.target;
   const file = input.files[0];
   if (!file) return;
@@ -2238,7 +2230,7 @@ function importData(event) {
 }
 
 function resetRescheduleCounts() {
-  if (!requireAdmin()) return;
+  if (!requireStaff()) return;
   if (confirm('すべてのメンバーの「振替回数カウント」を初期化（0回に戻す）しますか？')) {
     userDayRescheduleCounts = {};
     WEEKDAYS.forEach(d => dirty.days.add(d));
@@ -2249,7 +2241,7 @@ function resetRescheduleCounts() {
 }
 
 function resetAllData() {
-  if (!requireAdmin()) return;
+  if (!requireStaff()) return;
   if (confirm('【注意】すべてのデータを削除して初期状態に戻しますか？')) {
     Object.keys(overrides).forEach(d => dirty.dates.add(d));
     pendingRequests.forEach(r => dirty.reqs.add(r.id));
