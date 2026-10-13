@@ -1804,7 +1804,10 @@ function submitSpecialRequest() {
   batch.set(doc(db, 'requests', String(reqObj.id)), reqObj);
   if (photo) batch.set(doc(db, 'requestPhotos', String(reqObj.id)), { data: photo });
   batch.commit()
-    .catch(() => alert('申請の送信に失敗しました。もう一度お試しください。'));
+    .catch(err => {
+      console.error('Special request failed:', err);
+      alert(`申請の送信に失敗しました。もう一度お試しください。\n（${err && err.code ? err.code : 'unknown'}）`);
+    });
   closeModal('special-request-modal');
   clearReqPhoto();
   alert('管理者に申請を送信しました。承認されるまでしばらくお待ちください。');
