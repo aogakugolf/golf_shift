@@ -1634,17 +1634,18 @@ function setMinDate(inputId) {
 }
 
 /* ============ 自由練習 ============ */
-function addFreeShift() {
+// 追加ボタンを押したアカウントの名前で登録する
+async function addFreeShift() {
   const members = getShiftObjectsForDate(selectedDateStr);
   if (members.length >= MAX_STAFF) return;
 
-  const name = normName(prompt(`${selectedDateStr} に追加するお名前を入力してください:`));
-  if (!name) return;
-  if (name.length > 30) { alert('名前は30文字以内で入力してください。'); return; }
-  if (members.some(m => m.name === name)) {
+  const name = normName(currentMemberName);
+  if (!name) { alert('ログインしてください。'); return; }
+  if (members.some(m => normName(m.name) === name)) {
     alert(`${name}さんは既に ${selectedDateStr} に登録されています。`);
     return;
   }
+  if (!(await askConfirm(`${name}さんを ${selectedDateStr} の自由練習に追加しますか？`))) return;
   addMember(selectedDateStr, { name, originDate: selectedDateStr, type: 'free' });
   saveStorage();
 }
