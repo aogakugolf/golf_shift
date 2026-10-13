@@ -61,6 +61,8 @@ function sanitizeMaster(m) {
 }
 
 /* ============ 状態 ============ */
+const TAB_VIEWS = { home: 'dashboard-view', calendar: 'calendar-view', history: 'history-view', menu: 'menu-view' };
+let currentTab = 'home'; // 下部タブで表示中の画面
 let masterConfig = clone(defaultMaster);
 let userDayRescheduleCounts = {};
 let pendingRequests = [];
@@ -374,6 +376,8 @@ async function applyAuthUser(user) {
     currentMemberName = '';
     stopListeners();
     pendingRequests = [];
+    updateRoleUI();
+    showTab('home'); // 次にログインしたときはホームから
     const loginId = document.getElementById('login-id');
     const loginPass = document.getElementById('login-pass');
     if (loginId) loginId.value = '';
@@ -444,12 +448,24 @@ function updateRoleUI() {
   const isAdmin = currentUserRole === 'admin';
   const isExec = currentUserRole === 'executive';
   const hasMenu = isAdmin || isExec;
-  // メニューはログイン中の全員に表示。管理系の項目（.staff-only）は admin / 幹部のみ
-  const adminMenuArea = document.getElementById('admin-menu-area');
-  if (adminMenuArea) adminMenuArea.style.display = currentUserRole ? 'block' : 'none';
-  document.querySelectorAll('#admin-menu-area .staff-only').forEach(el => {
+  // 下部タブはログイン中の全員に表示。管理系の項目（.staff-only）は admin / 幹部のみ
+  const tabBar = document.getElementById('tab-bar');
+  if (tabBar) tabBar.style.display = currentUserRole ? '' : 'none';
+  document.querySelectorAll('.staff-only').forEach(el => {
     el.style.display = hasMenu ? '' : 'none';
   });
+
+  // メニュー画面のプロフィール
+  const menuProfile = document.getElementById('menu-profile');
+  if (menuProfile) {
+    const name = currentMemberName || '（名前未設定）';
+    menuProfile.innerHTML = `
+      <div class="avatar">${esc(name.charAt(0))}</div>
+      <div class="menu-profile-text">
+        <div class="menu-profile-name">${esc(name)}</div>
+        <div class="menu-profile-sub">${esc(ROLE_LABELS[currentUserRole] || 'ユーザー')} ・ 曜日ごとに${maxReschedulePerDay}回まで振替可能</div>
+      </div>`;
+  }
 
   const headerUserInfo = document.getElementById('header-user-info');
   if (headerUserInfo) {
@@ -872,8 +888,16 @@ function renderContent() {
   const dayName = getDayName(selectedDateStr);
 
   const reqCount = pendingRequests.length;
-  document.getElementById('menu-badge').textContent = reqCount;
-  document.getElementById('dropdown-req-badge').textContent = reqCount;
+  const menuBadge = document.getElementById('menu-badge');
+  if (menuBadge) {
+    menuBadge.textContent = reqCount;
+    menuBadge.style.display = isStaffRole() && reqCount > 0 ? '' : 'none';
+  }
+  const reqBadge = document.getElementById('dropdown-req-badge');
+  if (reqBadge) {
+    reqBadge.textContent = reqCount;
+    reqBadge.classList.toggle('zero', reqCount === 0);
+  }
 
   const statusBox = document.getElementById('status-container');
   if (count < MIN_STAFF) {
@@ -1027,22 +1051,47 @@ function onCalendarDateClick(dateStr) {
   switchView('shift-detail', dateStr);
 }
 
-function switchView(viewName, targetDateStr) {
-  const dashEl = document.getElementById('dashboard-view');
+/* ---- 下部タブ ---- */
+
+function setTabViewsVisible(activeTab) {
+  Object.entries(TAB_VIEWS).forEach(([tab, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = tab === activeTab ? '' : 'none';
+  });
+}
+
+function updateTabBar(activeTab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const on = btn.dataset.tab === activeTab;
+    btn.classList.toggle('active', on);
+    if (on) btn.setAttribute('aria-current', 'page');
+    else btn.removeAttribute('aria-current');
+  });
+}
+
+function showTab(tab) {
+  currentTab = TAB_VIEWS[tab] ? tab : 'home';
   const detailEl = document.getElementById('shift-detail-view');
-  if (!dashEl || !detailEl) return;
+  if (detailEl) detailEl.style.display = 'none';
+  document.body.classList.remove('in-detail');
+  setTabViewsVisible(currentTab);
+  updateTabBar(currentTab);
+  window.scrollTo(0, 0);
+}
 
-  if (targetDateStr) {
-    jumpToDate(targetDateStr);
-  }
-
+// 'dashboard' は直前のタブに戻る。'shift-detail' はその日の振替画面を開く
+function switchView(viewName, targetDateStr) {
+  if (targetDateStr) jumpToDate(targetDateStr);
   if (viewName === 'dashboard') {
-    dashEl.style.display = 'block';
-    detailEl.style.display = 'none';
-  } else {
-    dashEl.style.display = 'none';
-    detailEl.style.display = 'block';
+    showTab(currentTab);
+    return;
   }
+  const detailEl = document.getElementById('shift-detail-view');
+  if (!detailEl) return;
+  setTabViewsVisible(null);
+  detailEl.style.display = '';
+  document.body.classList.add('in-detail');
+  window.scrollTo(0, 0);
 }
 
 // 履歴に出す振替の一覧（一般ユーザーは自分の分のみ。幹部/adminは全員分）
@@ -1241,11 +1290,11 @@ function renderMyShift() {
           const isFixed = item.type === 'fixed' || (!isTransfer && !isFree);
 
           if (isTransfer) {
-            typeTag = `<span class="tag-type tag-transfer" style="font-size:10px;">振替枠 (${esc(item.originDate || '')}から)</span>`;
+            typeTag = `<span class="tag-type tag-transfer">振替枠 (${esc(item.originDate || '')}から)</span>`;
           } else if (isFree) {
-            typeTag = `<span class="tag-type tag-free" style="font-size:10px;">自由練習</span>`;
+            typeTag = `<span class="tag-type tag-free">自由練習</span>`;
           } else {
-            typeTag = `<span class="tag-type" style="background:var(--primary-light); color:var(--primary-dark); font-size:10px;">固定枠</span>`;
+            typeTag = `<span class="tag-type tag-fixed">固定枠</span>`;
           }
 
           // 人数チェック（回答A2: 6人ジャストなら振替時に代理が必要）
@@ -1283,10 +1332,15 @@ function renderMyShift() {
           return `
             <div class="my-schedule-item">
               <div class="my-schedule-header">
-                <div class="my-schedule-date">
-                  ${d.getMonth() + 1}月${d.getDate()}日 (${esc(dayName)}) ${typeTag}
+                <div class="date-tile${dayName === '土' ? ' sat' : ''}">
+                  <span class="date-tile-month">${d.getMonth() + 1}月</span>
+                  <span class="date-tile-day">${d.getDate()}</span>
+                  <span class="date-tile-week">${esc(dayName)}</span>
                 </div>
-                ${staffStatusBadge}
+                <div class="my-schedule-info">
+                  <div class="my-schedule-date">${typeTag}</div>
+                  ${staffStatusBadge}
+                </div>
               </div>
               <div class="my-schedule-actions">
                 ${actionButtons}
@@ -1299,7 +1353,7 @@ function renderMyShift() {
   container.innerHTML = `
     <div class="my-profile-banner">
       <div class="my-profile-info">
-        <div class="my-avatar-icon">👤</div>
+        <div class="my-avatar-icon">${esc(currentMemberName.charAt(0))}</div>
         <div>
           <div class="my-name-text">
             ${esc(currentMemberName)}
@@ -2543,7 +2597,7 @@ Object.assign(window, {
   openRulesModal, startRulesEdit, cancelRulesEdit, saveRules, openLimitModal, saveLimit, onReqPhotoSelected, clearReqPhoto,
   openDataModal, changeWeek, addFreeShift, toggleReqTypeUI, closeModal, submitSpecialRequest,
   saveMasterConfig, executeReschedule, exportData, importData, resetRescheduleCounts, resetAllData,
-  switchView, changeCalendarMonth, onCalendarDateClick,
+  switchView, showTab, changeCalendarMonth, onCalendarDateClick,
   toggleExtensionMode, submitExtensionRequest, openAllHistory, showSignup, showLogin, handleSignup, openRolesModal, changeUserRole, sendPasswordResetEmailForUser, deleteUserAccount, toggleUserDetail,
   addMasterMember, removeMasterMember,
   renderMyShift, openQuickRescheduleModal, toggleQuickExtensionMode, submitQuickExtension, selectQuickTargetDate, onQuickCustomDateSelect, confirmQuickReschedule,
