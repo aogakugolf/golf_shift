@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shift-app-v40';
+const CACHE_NAME = 'shift-app-v41';
 const ASSETS = ['./', './index.html', './app.js', './firebase-config.js', './manifest.json', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
