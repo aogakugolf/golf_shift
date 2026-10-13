@@ -909,7 +909,7 @@ function renderContent() {
   } else if (count < MAX_STAFF) {
     statusBox.innerHTML = `
       <div class="status-card success">
-        <div class="status-title">〇 出勤OK (${count}名)</div>
+        <div class="status-title">〇 練習OK (${count}名)</div>
         <div class="status-desc">最大${MAX_STAFF}名まで「自由練習」として参加可能です。</div>
       </div>`;
   } else {
@@ -1220,7 +1220,7 @@ function renderMyShift() {
     if (userBadge) userBadge.textContent = '未ログイン';
     container.innerHTML = `
       <div style="text-align: center; padding: 24px 16px; color: var(--text-sub); font-size: 13px;">
-        ログインすると、ここにあなたの出勤予定と振替ボタンが表示されます。
+        ログインすると、ここにあなたの練習予定と振替ボタンが表示されます。
       </div>`;
     return;
   }
@@ -1275,7 +1275,7 @@ function renderMyShift() {
   if (mySchedules.length === 0) {
     scheduleListHtml = `
       <div style="text-align: center; padding: 24px 16px; background: #fff; border: 1px dashed var(--line); border-radius: 10px;">
-        <p style="font-size: 13px; font-weight: bold; color: var(--text);">直近の出勤予定が登録されていません</p>
+        <p style="font-size: 13px; font-weight: bold; color: var(--text);">直近の練習予定が登録されていません</p>
         <p style="font-size: 11px; color: var(--text-sub); margin-top: 4px;">
           担当の曜日（固定枠）は幹部・管理者が設定します。
         </p>
@@ -1301,8 +1301,8 @@ function renderMyShift() {
           const staffStatusBadge = totalStaff < MIN_STAFF
             ? `<span style="color:var(--danger); font-size:11px; font-weight:bold;">⚠️ 人員不足 (${totalStaff}名)</span>`
             : totalStaff === MIN_STAFF
-              ? `<span style="color:var(--warning); font-size:11px; font-weight:bold;">⚠️ 6名出勤中 (振替は要代理)</span>`
-              : `<span style="color:var(--primary); font-size:11px;">〇 出勤 ${totalStaff}名</span>`;
+              ? `<span style="color:var(--warning); font-size:11px; font-weight:bold;">⚠️ 6名参加中 (振替は要代理)</span>`
+              : `<span style="color:var(--primary); font-size:11px;">〇 練習 ${totalStaff}名</span>`;
 
           let actionButtons = '';
           const detailBtn = `
@@ -1360,7 +1360,7 @@ function renderMyShift() {
             <span class="my-role-badge">${roleLabel}</span>
           </div>
           <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">
-            固定出勤: ${myFixedDays.length > 0 ? myFixedDays.map(d => d + '曜').join('・') : '未設定'}
+            固定練習: ${myFixedDays.length > 0 ? myFixedDays.map(d => d + '曜').join('・') : '未設定'}
           </div>
         </div>
       </div>
@@ -1404,7 +1404,7 @@ function openQuickRescheduleModal(originDateStr) {
   // 回答A2の人数制限チェック（従来通り6名未満になる場合は振替を禁止）
   else if (currentUserRole !== 'admin' && totalStaff - 1 < MIN_STAFF) {
     isBlocked = true;
-    warnMsg = `現在 ${originDateStr} は出勤者が ${totalStaff} 名です。振替すると ${totalStaff - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。先に代理メンバーを立ててください。`;
+    warnMsg = `現在 ${originDateStr} は参加者が ${totalStaff} 名です。振替すると ${totalStaff - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。先に代理メンバーを立ててください。`;
   }
 
   const notOpen = getTransferNotOpenMsg(originDateStr);
@@ -1484,7 +1484,7 @@ function renderQuickTargetDatesGrid(originDateStr) {
       statusText = '固定曜日';
       statusColor = 'var(--text-sub)';
     } else if (c.isAlreadyIn) {
-      statusText = '出勤予定あり';
+      statusText = '練習予定あり';
       statusColor = 'var(--text-sub)';
     } else if (c.isFull) {
       statusText = '満員 (14名)';
@@ -1627,7 +1627,7 @@ async function confirmQuickReschedule() {
 
   const originMembers = getShiftObjectsForDate(originDate);
   if (currentUserRole !== 'admin' && originMembers.length - 1 < MIN_STAFF) {
-    alert(`振替すると ${originDate} の出勤者が ${originMembers.length - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。\n事前に代理メンバーを立ててください。`);
+    alert(`振替すると ${originDate} の参加者が ${originMembers.length - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。\n事前に代理メンバーを立ててください。`);
     return;
   }
 
