@@ -1,6 +1,6 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, sendPasswordResetEmail, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, writeBatch, query, limit, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, onSnapshot, writeBatch, query, limit, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { firebaseConfig, LOGIN_EMAIL_DOMAIN } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
@@ -349,6 +349,7 @@ function startListeners(isAdmin) {
     unsubs.push(onSnapshot(query(collection(db, 'users'), limit(500)), snap => {
       allUsers = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
       renderRolesList();
+      backfillNameClaims(allUsers);
     }, onErr));
   }
 }
@@ -399,6 +400,16 @@ onAuthStateChanged(auth, async user => {
     const errorDiv = document.getElementById('login-error');
     if (errorDiv) errorDiv.style.display = 'block';
     return;
+  }
+
+  // 同名の別アカウントが名前を確保済みなら、一般ユーザーはログイン不可（なりすまし防止）
+  if (fullName && !(await ensureNameClaim(user.uid, fullName))) {
+    if (role === 'user') {
+      alert(`「${fullName}」は別のアカウントで登録されています。\nご本人の場合は幹部・管理者に連絡してください。`);
+      await signOut(auth);
+      return;
+    }
+    alert(`「${fullName}」は別のアカウントでも登録されています。\n「管理権限」から重複しているアカウントを確認してください。`);
   }
 
   currentUserRole = role;
@@ -494,6 +505,47 @@ function signupErrorMessage(err) {
   }
 }
 
+/* ---- 名前の確保（なりすまし防止） ----
+   fullnames/{名前} = { uid }。1つの名前は1アカウントだけが持てる。
+   Firestore ルールで「名前を確保しているアカウントだけがその名前のシフトを操作できる」ようにしている。 */
+function isValidNameKey(name) {
+  return !!name && !name.includes('/') && name !== '.' && name !== '..' && !/^__.*__$/.test(name);
+}
+
+// 自分の名前を確保する。確保済み・確保できた場合は true、同名の別アカウントが確保済みなら false
+async function ensureNameClaim(uid, fullName) {
+  if (!isValidNameKey(fullName)) return true;
+  try {
+    const ref = doc(db, 'fullnames', fullName);
+    const snap = await getDoc(ref);
+    if (snap.exists()) return snap.data().uid === uid;
+    await setDoc(ref, { uid });
+    return true;
+  } catch (e) {
+    console.warn('Name claim failed:', e); // 通信エラー等ではログインを止めない（操作はルール側で制限される）
+    return true;
+  }
+}
+
+// 既存ユーザー（この仕組みの導入前に登録した人）の名前を、登録が早い順に代理で確保する（admin/幹部、1セッション1回）
+let nameClaimsBackfilled = false;
+async function backfillNameClaims(users) {
+  if (nameClaimsBackfilled || !isStaffRole()) return;
+  nameClaimsBackfilled = true;
+  try {
+    const snap = await getDocs(collection(db, 'fullnames'));
+    const claimed = new Set(snap.docs.map(d => d.id));
+    const targets = [...users].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+    for (const u of targets) {
+      if (!u.fullName || !isValidNameKey(u.fullName) || claimed.has(u.fullName)) continue;
+      claimed.add(u.fullName);
+      await setDoc(doc(db, 'fullnames', u.fullName), { uid: u.uid });
+    }
+  } catch (e) {
+    console.warn('Name claim backfill failed:', e);
+  }
+}
+
 async function handleSignup(e) {
   e.preventDefault();
   const errorDiv = document.getElementById('signup-error');
@@ -506,6 +558,7 @@ async function handleSignup(e) {
   const pass = document.getElementById('signup-pass')?.value || '';
 
   if (!fullName || fullName.length > 30) { showErr('名前は1〜30文字で入力してください。'); return; }
+  if (!isValidNameKey(fullName)) { showErr('名前に「/」などの使用できない文字が含まれています。'); return; }
   if (!EMAIL_RE.test(email) || email.length > 254) { showErr('メールアドレスの形式が正しくありません。'); return; }
   if (email.endsWith('@' + LOGIN_EMAIL_DOMAIN)) { showErr('このメールアドレスは使用できません。'); return; }
   if (!USERNAME_RE.test(username)) { showErr('ユーザーネームは半角英数字と_で3〜20文字で入力してください。'); return; }
@@ -530,9 +583,22 @@ async function handleSignup(e) {
       console.warn('Username check skipped:', checkErr);
     }
 
+    // 同じ名前は2人目が登録できない（なりすまし防止。最終的な保証は Firestore ルール側）
+    try {
+      const nameTaken = await getDoc(doc(db, 'fullnames', fullName));
+      if (nameTaken.exists() && nameTaken.data().uid !== cred.user.uid) {
+        await deleteUser(cred.user);
+        showErr('この名前は既に登録されています。ご本人の場合は幹部・管理者に連絡してください。');
+        return;
+      }
+    } catch (checkErr) {
+      console.warn('Name check skipped:', checkErr);
+    }
+
     const batch = writeBatch(db);
     batch.set(doc(db, 'users', cred.user.uid), { fullName, email, username, role: 'user', createdAt: Date.now() });
     batch.set(doc(db, 'usernames', username), { uid: cred.user.uid, email });
+    batch.set(doc(db, 'fullnames', fullName), { uid: cred.user.uid });
     await batch.commit();
     created = true;
   } catch (err) {
@@ -651,6 +717,15 @@ async function deleteUserAccount(uid) {
     const batch = writeBatch(db);
     batch.delete(doc(db, 'users', uid));
     if (u.username) batch.delete(doc(db, 'usernames', u.username));
+    // このユーザーが確保していた名前を解放（同名の本人が登録・ログインできるように）
+    if (u.fullName && isValidNameKey(u.fullName)) {
+      try {
+        const claim = await getDoc(doc(db, 'fullnames', u.fullName));
+        if (claim.exists() && claim.data().uid === uid) batch.delete(claim.ref);
+      } catch (e) {
+        console.warn('Name claim lookup failed:', e);
+      }
+    }
     await batch.commit();
     alert('ユーザーを削除しました。');
   } catch (err) {
