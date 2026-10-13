@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -62,7 +63,10 @@
 
     .login-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background: var(--bg);
       z-index: 9999;
       display: flex;
@@ -77,13 +81,26 @@
       border-radius: 16px;
       width: 100%;
       max-width: 360px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
       border-top: 6px solid var(--primary);
     }
 
-    .login-header { text-align: center; margin-bottom: 24px; }
-    .login-header h2 { color: var(--primary-dark); font-size: 20px; font-weight: bold; }
-    .login-header p { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+    .login-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .login-header h2 {
+      color: var(--primary-dark);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .login-header p {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
 
     .login-error {
       color: var(--danger);
@@ -107,13 +124,24 @@
       justify-content: space-between;
       align-items: center;
       z-index: 10;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    h1 { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
-    .sub-info { font-size: 11px; color: rgba(255, 255, 255, 0.85); margin-top: 2px; }
+    h1 {
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
 
-    .menu-container { position: relative; }
+    .sub-info {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 2px;
+    }
+
+    .menu-container {
+      position: relative;
+    }
 
     .menu-toggle-btn {
       background: rgba(255, 255, 255, 0.15);
@@ -128,7 +156,10 @@
       align-items: center;
       gap: 6px;
     }
-    .menu-toggle-btn:active { background: rgba(255, 255, 255, 0.3); }
+
+    .menu-toggle-btn:active {
+      background: rgba(255, 255, 255, 0.3);
+    }
 
     .menu-badge {
       background: var(--accent-gold);
@@ -146,14 +177,17 @@
       width: 190px;
       background: #ffffff;
       border-radius: 10px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
       border: 1px solid var(--border);
       overflow: hidden;
       display: none;
       flex-direction: column;
       z-index: 100;
     }
-    .dropdown-menu.show { display: flex; }
+
+    .dropdown-menu.show {
+      display: flex;
+    }
 
     .dropdown-item {
       padding: 12px 16px;
@@ -170,9 +204,18 @@
       border-bottom: 1px solid var(--border);
       width: 100%;
     }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:active { background-color: var(--primary-light); }
-    .dropdown-item.logout-item { color: var(--danger); }
+
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .dropdown-item:active {
+      background-color: var(--primary-light);
+    }
+
+    .dropdown-item.logout-item {
+      color: var(--danger);
+    }
 
     .rules-text {
       font-size: 14px;
@@ -181,7 +224,12 @@
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
-    .rules-text.empty { color: var(--text-sub); text-align: center; padding: 20px 0; }
+
+    .rules-text.empty {
+      color: var(--text-sub);
+      text-align: center;
+      padding: 20px 0;
+    }
 
     .week-nav {
       display: flex;
@@ -203,13 +251,38 @@
       cursor: pointer;
     }
 
-    .current-month-title { font-weight: bold; font-size: 15px; color: var(--primary-dark); }
-    .current-month-title::after { content: ' ▾'; font-size: 12px; color: var(--text-sub); }
-    .title-wrap { position: relative; display: inline-block; padding: 4px 8px; border-radius: 6px; }
-    .title-wrap:active { background: var(--primary-light); }
+    .current-month-title {
+      font-weight: bold;
+      font-size: 15px;
+      color: var(--primary-dark);
+    }
+
+    .current-month-title::after {
+      content: ' ▾';
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .title-wrap {
+      position: relative;
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .title-wrap:active {
+      background: var(--primary-light);
+    }
+
     .title-wrap input {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; cursor: pointer; font-size: 16px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 16px;
     }
 
     .day-tabs {
@@ -229,7 +302,13 @@
       cursor: pointer;
       position: relative;
     }
-    .tab-item.active { color: var(--primary); font-weight: bold; background: var(--primary-light); }
+
+    .tab-item.active {
+      color: var(--primary);
+      font-weight: bold;
+      background: var(--primary-light);
+    }
+
     .tab-item.active::after {
       content: '';
       position: absolute;
@@ -240,10 +319,22 @@
       background: var(--accent-gold);
     }
 
-    .tab-date { font-size: 16px; font-weight: bold; display: block; margin-top: 2px; }
-    .badge { display: block; font-size: 10px; margin-top: 2px; }
+    .tab-date {
+      font-size: 16px;
+      font-weight: bold;
+      display: block;
+      margin-top: 2px;
+    }
 
-    .container { padding: 16px; }
+    .badge {
+      display: block;
+      font-size: 10px;
+      margin-top: 2px;
+    }
+
+    .container {
+      padding: 16px;
+    }
 
     .status-card {
       padding: 12px 14px;
@@ -252,13 +343,40 @@
       font-size: 13px;
       border-left: 5px solid;
     }
-    .status-card.danger { background-color: var(--danger-bg); color: var(--danger); border-left-color: var(--danger); }
-    .status-card.success { background-color: var(--success-bg); color: var(--primary-dark); border-left-color: var(--primary); }
-    .status-card.warning { background-color: var(--warning-bg); color: #7a5200; border-left-color: var(--warning); }
-    .status-title { font-weight: bold; }
-    .status-desc { font-size: 11px; margin-top: 2px; opacity: 0.9; }
 
-    .member-list { display: flex; flex-direction: column; gap: 10px; }
+    .status-card.danger {
+      background-color: var(--danger-bg);
+      color: var(--danger);
+      border-left-color: var(--danger);
+    }
+
+    .status-card.success {
+      background-color: var(--success-bg);
+      color: var(--primary-dark);
+      border-left-color: var(--primary);
+    }
+
+    .status-card.warning {
+      background-color: var(--warning-bg);
+      color: #7a5200;
+      border-left-color: var(--warning);
+    }
+
+    .status-title {
+      font-weight: bold;
+    }
+
+    .status-desc {
+      font-size: 11px;
+      margin-top: 2px;
+      opacity: 0.9;
+    }
+
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
     .member-card {
       background: var(--card-bg);
@@ -268,13 +386,31 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
-    .member-card.mine { border-color: var(--primary); background: var(--primary-light); box-shadow: 0 0 0 1px var(--primary); }
 
-    .member-info { display: flex; flex-direction: column; }
-    .member-name { font-size: 15px; font-weight: 600; color: var(--text); }
-    .member-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+    .member-card.mine {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .member-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .member-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .member-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
 
     .tag-type {
       display: inline-block;
@@ -284,11 +420,26 @@
       font-weight: bold;
       margin-left: 6px;
     }
-    .tag-transfer { background: var(--warning-bg); color: #7a5200; }
-    .tag-free { background: var(--primary-light); color: var(--primary); }
-    .tag-special { background: #e0f2fe; color: #0369a1; }
 
-    .action-group { display: flex; gap: 6px; }
+    .tag-transfer {
+      background: var(--warning-bg);
+      color: #7a5200;
+    }
+
+    .tag-free {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .tag-special {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 6px;
+    }
 
     .btn-action {
       background: var(--card-bg);
@@ -300,9 +451,19 @@
       font-weight: 600;
       cursor: pointer;
     }
-    .btn-action:hover { background: var(--primary-light); }
-    .btn-cancel { border-color: var(--danger); color: var(--danger); }
-    .btn-cancel:hover { background: var(--danger-bg); }
+
+    .btn-action:hover {
+      background: var(--primary-light);
+    }
+
+    .btn-cancel {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-cancel:hover {
+      background: var(--danger-bg);
+    }
 
     .bottom-bar {
       position: fixed;
@@ -315,7 +476,7 @@
       display: flex;
       gap: 10px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
     }
 
     .btn-main {
@@ -331,13 +492,21 @@
       text-align: center;
       border-bottom: 2px solid var(--primary-dark);
     }
-    .btn-main:disabled { background: #a3b1a8; border-bottom: none; cursor: not-allowed; }
+
+    .btn-main:disabled {
+      background: #a3b1a8;
+      border-bottom: none;
+      cursor: not-allowed;
+    }
 
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
       z-index: 100;
       justify-content: center;
       align-items: center;
@@ -355,14 +524,50 @@
       border-top: 5px solid var(--primary);
     }
 
-    .modal-title { font-size: 16px; font-weight: bold; color: var(--primary-dark); margin-bottom: 12px; }
+    .modal-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: var(--primary-dark);
+      margin-bottom: 12px;
+    }
 
-    .form-group { margin-bottom: 14px; }
-    .pw-wrap { position: relative; }
-    .pw-wrap input { padding-right: 56px; }
-    .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-sub); font-size: 12px; font-weight: 600; padding: 6px 8px; cursor: pointer; }
-    .form-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
-    .form-group input, .form-group textarea, .form-group select {
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .pw-wrap {
+      position: relative;
+    }
+
+    .pw-wrap input {
+      padding-right: 56px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-sub);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 8px;
+      cursor: pointer;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border);
@@ -370,9 +575,18 @@
       font-size: 14px;
     }
 
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+    }
 
-    .data-section { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
+    .data-section {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
 
     .btn-danger-outline {
       border: 1px solid var(--danger);
@@ -386,7 +600,10 @@
       cursor: pointer;
       margin-top: 6px;
     }
-    .btn-danger-outline:hover { background: var(--danger-bg); }
+
+    .btn-danger-outline:hover {
+      background: var(--danger-bg);
+    }
 
     .request-card {
       border: 1px solid var(--border);
@@ -404,8 +621,16 @@
       font-weight: bold;
       margin-bottom: 6px;
     }
-    .req-absent { background: var(--danger-bg); color: var(--danger); }
-    .req-special { background: #e0f2fe; color: #0369a1; }
+
+    .req-absent {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .req-special {
+      background: #e0f2fe;
+      color: #0369a1;
+    }
 
     .request-reason {
       font-size: 12px;
@@ -417,103 +642,412 @@
     }
 
     /* ---------- ホーム（ダッシュボード） ---------- */
-    .dashboard-container { display: flex; flex-direction: column; gap: 14px; max-width: 640px; margin: 0 auto; padding: 14px; }
-
-    .dashboard-section { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
-    .section-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line);
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 14px;
     }
-    .section-header h3 { font-family: var(--serif); font-size: 17px; font-weight: 700; letter-spacing: 0.06em; color: var(--green-deep); }
 
-    .transfer-list { display: flex; flex-direction: column; gap: 8px; }
+    .dashboard-section {
+      background: var(--sheet);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
 
-    .transfer-card { padding: 10px 12px; background: #fafcfa; border: 1px solid var(--line); border-radius: 10px; }
-    .transfer-card-header { display: flex; justify-content: space-between; align-items: center; }
-    .transfer-member-name { font-size: 14px; font-weight: 700; color: var(--ink); }
-    .transfer-route { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 12px; }
-    .date-pill { padding: 3px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
-    .date-pill.origin { color: var(--red); background: var(--red-tint); }
-    .date-pill.target { color: var(--green); background: var(--green-tint); }
-    .route-arrow { color: var(--ink-sub); font-weight: 700; }
-    .empty-state { padding: 14px 0; text-align: center; font-size: 13px; color: var(--ink-sub); }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-header h3 {
+      font-family: var(--serif);
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--green-deep);
+    }
+
+    .transfer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .transfer-card {
+      padding: 10px 12px;
+      background: #fafcfa;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .transfer-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .transfer-member-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .transfer-route {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    .date-pill {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .date-pill.origin {
+      color: var(--red);
+      background: var(--red-tint);
+    }
+
+    .date-pill.target {
+      color: var(--green);
+      background: var(--green-tint);
+    }
+
+    .route-arrow {
+      color: var(--ink-sub);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      padding: 14px 0;
+      text-align: center;
+      font-size: 13px;
+      color: var(--ink-sub);
+    }
 
     .nav-btn-sm {
-      padding: 5px 12px; border-radius: 999px; cursor: pointer;
-      font-size: 12px; font-weight: 700; color: var(--green);
-      background: var(--sheet); border: 1px solid var(--line);
+      padding: 5px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--sheet);
+      border: 1px solid var(--line);
     }
-    .nav-btn-sm:active { background: var(--green-tint); }
 
-    .calendar-card { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--sheet); }
-    .calendar-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--green-tint); border-bottom: 1px solid var(--line); text-align: center; }
-    .cal-day-name { padding: 7px 0; font-size: 12px; font-weight: 700; color: var(--green-deep); }
-    .cal-day-name.sun { color: var(--red); }
-    .cal-day-name.sat { color: var(--sky); }
-    .calendar-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); }
-    .cal-cell {
-      display: flex; flex-direction: column; align-items: center; min-height: 54px; padding: 5px 2px; cursor: pointer;
-      border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); user-select: none;
+    .nav-btn-sm:active {
+      background: var(--green-tint);
     }
-    .cal-cell:nth-child(7n) { border-right: none; }
-    .cal-cell:active { background: var(--green-tint); }
-    .cal-cell.other-month { cursor: default; background: #f6f8f6; }
-    .cal-cell.is-sunday { cursor: default; background: #f6f8f6; }
-    .cal-cell.is-today { box-shadow: inset 0 0 0 2px var(--gold); }
-    .cal-date-num { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink); }
-    .cal-cell.is-sunday .cal-date-num { color: var(--red); }
-    .cal-cell.is-saturday .cal-date-num { color: var(--sky); }
-    .cal-badge { margin-top: 4px; padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 700; white-space: nowrap; }
-    .count-low { color: var(--red); background: var(--red-tint); }
-    .count-ok { color: var(--green); background: var(--green-tint); }
-    .count-full { color: var(--amber); background: var(--amber-tint); }
-    .count-off { color: var(--ink-sub); background: #e8ece9; }
-    .calendar-hint { margin-top: 10px; text-align: center; font-size: 11px; color: var(--ink-sub); }
+
+    .calendar-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--sheet);
+    }
+
+    .calendar-grid-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: var(--green-tint);
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .cal-day-name {
+      padding: 7px 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green-deep);
+    }
+
+    .cal-day-name.sun {
+      color: var(--red);
+    }
+
+    .cal-day-name.sat {
+      color: var(--sky);
+    }
+
+    .calendar-grid-body {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cal-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 54px;
+      padding: 5px 2px;
+      cursor: pointer;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      user-select: none;
+    }
+
+    .cal-cell:nth-child(7n) {
+      border-right: none;
+    }
+
+    .cal-cell:active {
+      background: var(--green-tint);
+    }
+
+    .cal-cell.other-month {
+      cursor: default;
+      background: #f6f8f6;
+    }
+
+    .cal-cell.is-sunday {
+      cursor: default;
+      background: #f6f8f6;
+    }
+
+    .cal-cell.is-today {
+      box-shadow: inset 0 0 0 2px var(--gold);
+    }
+
+    .cal-date-num {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .cal-cell.is-sunday .cal-date-num {
+      color: var(--red);
+    }
+
+    .cal-cell.is-saturday .cal-date-num {
+      color: var(--sky);
+    }
+
+    .cal-badge {
+      margin-top: 4px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .count-low {
+      color: var(--red);
+      background: var(--red-tint);
+    }
+
+    .count-ok {
+      color: var(--green);
+      background: var(--green-tint);
+    }
+
+    .count-full {
+      color: var(--amber);
+      background: var(--amber-tint);
+    }
+
+    .count-off {
+      color: var(--ink-sub);
+      background: #e8ece9;
+    }
+
+    .calendar-hint {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--ink-sub);
+    }
 
     /* 振替画面の戻るバー */
-    .back-bar { padding: 10px 14px 0; background: var(--paper); }
-    .btn-back {
-      padding: 7px 14px; border-radius: 999px; cursor: pointer;
-      font-size: 12px; font-weight: 700; color: var(--green);
-      background: var(--sheet); border: 1px solid var(--line);
+    .back-bar {
+      padding: 10px 14px 0;
+      background: var(--paper);
     }
-    .btn-back:active { background: var(--green-tint); }
+
+    .btn-back {
+      padding: 7px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--sheet);
+      border: 1px solid var(--line);
+    }
+
+    .btn-back:active {
+      background: var(--green-tint);
+    }
 
     /* ---------- アカウント作成・管理権限 ---------- */
-    .login-overlay { overflow-y: auto; align-items: flex-start; }
-    .login-card { margin: auto; }
+    .login-overlay {
+      overflow-y: auto;
+      align-items: flex-start;
+    }
+
+    .login-card {
+      margin: auto;
+    }
+
     .link-btn {
-      display: block; width: 100%; margin-top: 14px; padding: 6px; background: none; border: none;
-      font-size: 13px; font-weight: 700; color: var(--green); text-decoration: underline; cursor: pointer; text-align: center;
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 6px;
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      text-decoration: underline;
+      cursor: pointer;
+      text-align: center;
     }
-    .form-hint { margin-top: 4px; font-size: 11px; color: var(--ink-sub); }
-    .role-user-card { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: #fafcfa; overflow: hidden; }
-    .role-user-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; }
+
+    .form-hint {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--ink-sub);
+    }
+
+    .role-user-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #fafcfa;
+      overflow: hidden;
+    }
+
+    .role-user-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+
     .role-user-name {
-      flex: 1; min-width: 0; text-align: left; background: none; border: none; cursor: pointer;
-      font-size: 14px; font-weight: 700; color: var(--ink); word-break: break-all;
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      word-break: break-all;
     }
-    .role-select { padding: 6px 8px; font-size: 13px; font-weight: 700; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 8px; }
-    .role-user-detail { display: none; padding: 10px 12px; border-top: 1px solid var(--line); font-size: 12px; background: #fff; }
-    .role-user-detail.open { display: block; }
-    .role-user-detail dl { display: grid; grid-template-columns: 90px 1fr; gap: 4px 8px; margin-bottom: 10px; }
-    .role-user-detail dt { color: var(--ink-sub); font-weight: 700; }
-    .role-user-detail dd { word-break: break-all; color: var(--ink); }
+
+    .role-select {
+      padding: 6px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .role-user-detail {
+      display: none;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+      background: #fff;
+    }
+
+    .role-user-detail.open {
+      display: block;
+    }
+
+    .role-user-detail dl {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      gap: 4px 8px;
+      margin-bottom: 10px;
+    }
+
+    .role-user-detail dt {
+      color: var(--ink-sub);
+      font-weight: 700;
+    }
+
+    .role-user-detail dd {
+      word-break: break-all;
+      color: var(--ink);
+    }
 
     /* ---------- 固定メンバー設定 ---------- */
-    .master-day-group { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
-    .master-day-group:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-    .master-chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 28px; }
+    .master-day-group {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+    }
+
+    .master-day-group:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .master-chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+      min-height: 28px;
+    }
+
     .master-chip {
-      display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px;
-      font-size: 12px; font-weight: 700; background: var(--green-tint); color: var(--green-deep); border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--green-tint);
+      color: var(--green-deep);
+      border: 1px solid var(--line);
     }
+
     .master-chip button {
-      background: none; border: none; color: var(--ink-sub); font-size: 14px; font-weight: bold; cursor: pointer; padding: 0 2px; line-height: 1;
+      background: none;
+      border: none;
+      color: var(--ink-sub);
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 0 2px;
+      line-height: 1;
     }
-    .master-chip button:hover { color: var(--red); }
-    .master-add-row { display: flex; gap: 6px; }
-    .master-add-row input { flex: 1; }
+
+    .master-chip button:hover {
+      color: var(--red);
+    }
+
+    .master-add-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .master-add-row input {
+      flex: 1;
+    }
 
     /* ---------- マイシフト・自分の振替 ---------- */
     .my-shift-section {
@@ -524,13 +1058,17 @@
       position: relative;
       overflow: hidden;
     }
+
     .my-shift-section::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0;
+      top: 0;
+      left: 0;
+      right: 0;
       height: 4px;
       background: linear-gradient(90deg, var(--primary), var(--accent-gold));
     }
+
     .my-shift-user-tag {
       font-size: 11px;
       font-weight: 700;
@@ -540,6 +1078,7 @@
       border-radius: 6px;
       border: 1px solid var(--border);
     }
+
     .my-profile-banner {
       display: flex;
       flex-wrap: wrap;
@@ -552,11 +1091,13 @@
       border: 1px solid var(--line);
       margin-bottom: 14px;
     }
+
     .my-profile-info {
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .my-avatar-icon {
       width: 38px;
       height: 38px;
@@ -569,11 +1110,13 @@
       font-size: 18px;
       font-weight: bold;
     }
+
     .my-name-text {
       font-size: 15px;
       font-weight: bold;
       color: var(--text);
     }
+
     .my-role-badge {
       font-size: 10px;
       font-weight: 700;
@@ -583,11 +1126,13 @@
       color: var(--sky);
       margin-left: 6px;
     }
+
     .my-counts-badges {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
     }
+
     .count-pill {
       font-size: 11px;
       font-weight: 600;
@@ -597,14 +1142,17 @@
       border: 1px solid var(--line);
       color: var(--text-sub);
     }
+
     .count-pill strong {
       color: var(--primary);
     }
+
     .my-schedule-list {
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
+
     .my-schedule-item {
       background: #ffffff;
       border: 1px solid var(--line);
@@ -615,20 +1163,24 @@
       gap: 8px;
       transition: all 0.2s ease;
     }
+
     .my-schedule-item:hover {
       border-color: var(--primary);
       box-shadow: 0 2px 8px rgba(0, 98, 65, 0.08);
     }
+
     .my-schedule-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .my-schedule-date {
       font-size: 14px;
       font-weight: bold;
       color: var(--text);
     }
+
     .my-schedule-details {
       display: flex;
       align-items: center;
@@ -638,6 +1190,7 @@
       font-size: 12px;
       color: var(--text-sub);
     }
+
     .my-schedule-actions {
       display: flex;
       gap: 6px;
@@ -647,6 +1200,7 @@
       padding-top: 8px;
       border-top: 1px dashed var(--line);
     }
+
     .btn-reschedule-quick {
       background: var(--primary);
       color: #ffffff;
@@ -661,13 +1215,16 @@
       gap: 4px;
       transition: background 0.15s;
     }
+
     .btn-reschedule-quick:hover {
       background: var(--primary-dark);
     }
+
     .btn-reschedule-quick:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
+
     .target-date-picker-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -677,6 +1234,7 @@
       margin: 12px 0;
       padding: 4px;
     }
+
     .target-date-card {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -686,23 +1244,34 @@
       background: #ffffff;
       transition: all 0.15s;
     }
+
     .target-date-card:hover:not(.disabled) {
       border-color: var(--primary);
       background: var(--primary-light);
     }
+
     .target-date-card.selected {
       border-color: var(--primary);
       background: var(--primary-light);
       box-shadow: 0 0 0 2px var(--primary);
       font-weight: bold;
     }
+
     .target-date-card.disabled {
       opacity: 0.5;
       background: #f0f0f0;
       cursor: not-allowed;
     }
-    .target-date-card .d-name { font-size: 13px; font-weight: bold; }
-    .target-date-card .d-status { font-size: 10px; margin-top: 4px; }
+
+    .target-date-card .d-name {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .target-date-card .d-status {
+      font-size: 10px;
+      margin-top: 4px;
+    }
 
     .staff-alert-banner {
       background: var(--warning-bg);
@@ -719,438 +1288,597 @@
        レスポンシブ対応
        スマホ（~360px）→ 大きめスマホ → タブレット（768px~）→ PC（1100px~）
        ====================================================== */
-    html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-    body { overflow-x: hidden; }
-    img, svg, video { max-width: 100%; height: auto; }
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    img,
+    svg,
+    video {
+      max-width: 100%;
+      height: auto;
+    }
 
     /* ノッチ・角丸ディスプレイの安全領域 */
-    header { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-    header > div:first-child { min-width: 0; }
-    header h1 { font-size: clamp(16px, 4.6vw, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    header .sub-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .menu-container { flex-shrink: 0; margin-left: 8px; }
-    .dropdown-menu { width: min(190px, 70vw); }
+    header {
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+    }
+
+    header>div:first-child {
+      min-width: 0;
+    }
+
+    header h1 {
+      font-size: clamp(16px, 4.6vw, 20px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    header .sub-info {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .menu-container {
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+
+    .dropdown-menu {
+      width: min(190px, 70vw);
+    }
 
     /* モーダルは画面の高さ・幅に収める（横向きスマホ対応で dvh も使用） */
-    .modal-content { max-height: 85vh; max-height: 85dvh; }
-    .modal-content { overflow-wrap: anywhere; }
+    .modal-content {
+      max-height: 85vh;
+      max-height: 85dvh;
+    }
+
+    .modal-content {
+      overflow-wrap: anywhere;
+    }
 
     /* タッチ端末ではボタンを押しやすく */
     @media (pointer: coarse) {
-      .btn-action, .nav-btn, .nav-btn-sm, .btn-back, .link-btn { min-height: 38px; }
+
+      .btn-action,
+      .nav-btn,
+      .nav-btn-sm,
+      .btn-back,
+      .link-btn {
+        min-height: 38px;
+      }
     }
 
     /* ---- 小さいスマホ（360px以下）---- */
     @media (max-width: 360px) {
-      .container { padding: 12px; }
-      .dashboard-container { padding: 10px; gap: 10px; }
-      .dashboard-section { padding: 12px 10px; }
-      .modal { padding: 10px; }
-      .modal-content { padding: 16px 14px; }
-      .tab-item { min-width: 52px; font-size: 11px; }
-      .tab-date { font-size: 14px; }
-      .week-nav { padding: 8px 10px; }
-      .nav-btn { padding: 6px 8px; font-size: 11px; }
-      .login-card { padding: 22px 18px; }
+      .container {
+        padding: 12px;
+      }
+
+      .dashboard-container {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .dashboard-section {
+        padding: 12px 10px;
+      }
+
+      .modal {
+        padding: 10px;
+      }
+
+      .modal-content {
+        padding: 16px 14px;
+      }
+
+      .tab-item {
+        min-width: 52px;
+        font-size: 11px;
+      }
+
+      .tab-date {
+        font-size: 14px;
+      }
+
+      .week-nav {
+        padding: 8px 10px;
+      }
+
+      .nav-btn {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+
+      .login-card {
+        padding: 22px 18px;
+      }
     }
 
     /* ---- タブレット（768px以上）: 中身を中央に寄せて読みやすい幅にする ---- */
     @media (min-width: 768px) {
-      .day-tabs, .week-nav, .container, .back-bar {
+
+      .day-tabs,
+      .week-nav,
+      .container,
+      .back-bar {
         padding-left: max(16px, calc((100vw - 860px) / 2));
         padding-right: max(16px, calc((100vw - 860px) / 2));
       }
-      header, .bottom-bar {
+
+      header,
+      .bottom-bar {
         padding-left: max(16px, calc((100vw - 860px) / 2));
         padding-right: max(16px, calc((100vw - 860px) / 2));
       }
-      .day-tabs { justify-content: center; }
-      .dashboard-container { max-width: 820px; padding: 20px; gap: 18px; }
-      .dashboard-section { padding: 18px; }
-      .modal-content { max-width: 520px; padding: 24px; }
-      .login-card { max-width: 400px; }
-      .section-header h3 { font-size: 18px; }
+
+      .day-tabs {
+        justify-content: center;
+      }
+
+      .dashboard-container {
+        max-width: 820px;
+        padding: 20px;
+        gap: 18px;
+      }
+
+      .dashboard-section {
+        padding: 18px;
+      }
+
+      .modal-content {
+        max-width: 520px;
+        padding: 24px;
+      }
+
+      .login-card {
+        max-width: 400px;
+      }
+
+      .section-header h3 {
+        font-size: 18px;
+      }
     }
 
     /* ---- PC（1100px以上）: ホームを2カラムにして画面を広く使う ---- */
     @media (min-width: 1100px) {
-      header, .bottom-bar {
+
+      header,
+      .bottom-bar {
         padding-left: max(24px, calc((100vw - 960px) / 2));
         padding-right: max(24px, calc((100vw - 960px) / 2));
       }
+
       .dashboard-container {
         max-width: 1000px;
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
       }
-      .dashboard-container > .dashboard-section:nth-child(3) { grid-column: 1 / -1; }  /* カレンダーは全幅 */
-      .day-tabs, .week-nav, .container, .back-bar {
+
+      .dashboard-container>.dashboard-section:nth-child(3) {
+        grid-column: 1 / -1;
+      }
+
+      /* カレンダーは全幅 */
+      .day-tabs,
+      .week-nav,
+      .container,
+      .back-bar {
         padding-left: max(24px, calc((100vw - 960px) / 2));
         padding-right: max(24px, calc((100vw - 960px) / 2));
       }
     }
 
-    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
   </style>
 </head>
+
 <body>
 
-<!-- ログイン画面 -->
-<div class="login-overlay" id="login-overlay">
-  <div class="login-card">
-    <div class="login-header">
-      <h2>オークラ振替連絡</h2>
-      <p id="login-subtitle">ログインしてシフトシステムを開始します</p>
-    </div>
+  <!-- ログイン画面 -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>オークラ振替連絡</h2>
+        <p id="login-subtitle">ログインしてシフトシステムを開始します</p>
+      </div>
 
-    <!-- ログイン -->
-    <div id="login-panel">
-      <div class="login-error" id="login-error">ユーザー名またはパスワードが正しくありません</div>
+      <!-- ログイン -->
+      <div id="login-panel">
+        <div class="login-error" id="login-error">ユーザー名またはパスワードが正しくありません</div>
 
-      <form onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="login-id">ユーザー名</label>
-          <input type="text" id="login-id" placeholder="ユーザー名を入力" required autocomplete="username" autocapitalize="none">
-        </div>
-        <div class="form-group">
-          <label for="login-pass">パスワード</label>
-          <div class="pw-wrap"><input type="password" id="login-pass" placeholder="パスワードを入力" required autocomplete="current-password"><button type="button" class="pw-toggle" aria-label="パスワードを表示" aria-pressed="false" onclick="var i=document.getElementById('login-pass');var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'隠す':'表示';this.setAttribute('aria-pressed',s)">表示</button></div>
-        </div>
-        <button type="submit" class="btn-main" style="width: 100%; margin-top: 10px;">ログイン</button>
-      </form>
-      <button type="button" class="link-btn" onclick="showSignup()">アカウントを新規作成する</button>
-    </div>
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-id">ユーザー名</label>
+            <input type="text" id="login-id" placeholder="ユーザー名を入力" required autocomplete="username"
+              autocapitalize="none">
+          </div>
+          <div class="form-group">
+            <label for="login-pass">パスワード</label>
+            <div class="pw-wrap"><input type="password" id="login-pass" placeholder="パスワードを入力" required
+                autocomplete="current-password"><button type="button" class="pw-toggle" aria-label="パスワードを表示"
+                aria-pressed="false"
+                onclick="var i=document.getElementById('login-pass');var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'隠す':'表示';this.setAttribute('aria-pressed',s)">表示</button>
+            </div>
+          </div>
+          <button type="submit" class="btn-main" style="width: 100%; margin-top: 10px;">ログイン</button>
+        </form>
+        <button type="button" class="link-btn" onclick="showSignup()">アカウントを新規作成する</button>
+      </div>
 
-    <!-- アカウント作成 -->
-    <div id="signup-panel" style="display:none;">
-      <div class="login-error" id="signup-error"></div>
+      <!-- アカウント作成 -->
+      <div id="signup-panel" style="display:none;">
+        <div class="login-error" id="signup-error"></div>
 
-      <form onsubmit="handleSignup(event)" autocomplete="off">
-        <div class="form-group">
-          <label for="signup-fullname">名前（フルネーム）</label>
-          <input type="text" id="signup-fullname" placeholder="例：石川 太郎" required maxlength="30" autocomplete="name">
-          <div class="form-hint">名前を入力してください</div>
-        </div>
-        <div class="form-group">
-          <label for="signup-email">メールアドレス</label>
-          <input type="email" id="signup-email" placeholder="example@mail.com" required maxlength="254" autocomplete="email" autocapitalize="none">
-        </div>
-        <div class="form-group">
-          <label for="signup-username">ユーザーネーム</label>
-          <input type="text" id="signup-username" placeholder="半角英数字と_ら3〜20文字" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" autocapitalize="none">
-        </div>
-        <div class="form-group">
-          <label for="signup-pass">パスワード</label>
-          <div class="pw-wrap"><input type="password" id="signup-pass" placeholder="8文字以上" required minlength="8" maxlength="64" autocomplete="new-password"><button type="button" class="pw-toggle" aria-label="パスワードを表示" aria-pressed="false" onclick="var i=document.getElementById('signup-pass');var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'隠す':'表示';this.setAttribute('aria-pressed',s)">表示</button></div>
-        </div>
-        <button type="submit" class="btn-main" id="signup-submit" style="width: 100%; margin-top: 10px;">アカウントを作成</button>
-      </form>
-      <button type="button" class="link-btn" onclick="showLogin()">ログイン画面に戻る</button>
+        <form onsubmit="handleSignup(event)" autocomplete="off">
+          <div class="form-group">
+            <label for="signup-fullname">名前（フルネーム）</label>
+            <input type="text" id="signup-fullname" placeholder="例：石川 太郎" required maxlength="30" autocomplete="name">
+            <div class="form-hint">名前を入力してください</div>
+          </div>
+          <div class="form-group">
+            <label for="signup-email">メールアドレス</label>
+            <input type="email" id="signup-email" placeholder="example@mail.com" required maxlength="254"
+              autocomplete="email" autocapitalize="none">
+          </div>
+          <div class="form-group">
+            <label for="signup-username">ユーザーネーム</label>
+            <input type="text" id="signup-username" placeholder="半角英数字と_ら3〜20文字" required minlength="3" maxlength="20"
+              pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" autocapitalize="none">
+          </div>
+          <div class="form-group">
+            <label for="signup-pass">パスワード</label>
+            <div class="pw-wrap"><input type="password" id="signup-pass" placeholder="8文字以上" required minlength="8"
+                maxlength="64" autocomplete="new-password"><button type="button" class="pw-toggle" aria-label="パスワードを表示"
+                aria-pressed="false"
+                onclick="var i=document.getElementById('signup-pass');var s=i.type==='password';i.type=s?'text':'password';this.textContent=s?'隠す':'表示';this.setAttribute('aria-pressed',s)">表示</button>
+            </div>
+          </div>
+          <button type="submit" class="btn-main" id="signup-submit"
+            style="width: 100%; margin-top: 10px;">アカウントを作成</button>
+        </form>
+        <button type="button" class="link-btn" onclick="showLogin()">ログイン画面に戻る</button>
+      </div>
     </div>
   </div>
-</div>
 
-<header>
-  <div>
-    <h1>オークラ振替連絡</h1>
-    <div class="sub-info" id="header-user-info">曜日ごとに1人5回まで振替可能</div>
-  </div>
+  <header>
+    <div>
+      <h1>オークラ振替連絡</h1>
+      <div class="sub-info" id="header-user-info">曜日ごとに1人5回まで振替可能</div>
+    </div>
 
-  <div style="display: flex; align-items: center; gap: 8px;">
-    <!-- メニュー（全員共通。管理系の項目は admin / 幹部のみ表示） -->
-    <div class="menu-container" id="admin-menu-area" style="display:none;">
-      <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">
-        メニュー
-        <span class="menu-badge staff-only" id="menu-badge">0</span>
-      </button>
-
-      <div class="dropdown-menu" id="dropdown-menu">
-        <button class="dropdown-item" onclick="openRulesModal()">ルール確認</button>
-        <button class="dropdown-item staff-only" id="item-requests" onclick="openRequestsModal()">
-          申請管理
-          <span class="menu-badge" id="dropdown-req-badge">0</span>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- メニュー（全員共通。管理系の項目は admin / 幹部のみ表示） -->
+      <div class="menu-container" id="admin-menu-area" style="display:none;">
+        <button class="menu-toggle-btn" onclick="toggleDropdownMenu(event)">
+          メニュー
+          <span class="menu-badge staff-only" id="menu-badge">0</span>
         </button>
-        <button class="dropdown-item staff-only" id="item-roles" onclick="openRolesModal()">管理権限</button>
-        <button class="dropdown-item staff-only" id="item-master" onclick="openMasterConfig()">固定設定</button>
-        <button class="dropdown-item staff-only" id="item-data" onclick="openDataModal()">データ管理</button>
-        <button class="dropdown-item logout-item" onclick="handleLogout()">ログアウト</button>
-      </div>
-    </div>
-  </div>
-</header>
 
-<!-- ホーム画面 -->
-<div id="dashboard-view" class="view-section">
-  <div class="dashboard-container">
-
-    <!-- 自分の出勤予定・振替（マイシフト） -->
-    <div class="dashboard-section my-shift-section">
-      <div class="section-header">
-        <h3 style="display: flex; align-items: center; gap: 6px;">
-          <span>自分の出勤予定・振替</span>
-        </h3>
-        <span class="my-shift-user-tag" id="my-shift-user-badge">ログイン中</span>
-      </div>
-      <div id="my-shift-container"></div>
-    </div>
-
-    <!-- 振替状況（何日の分をいつに振り替えたか） -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <h3 id="transfer-history-title">振替状況・履歴</h3>
-      </div>
-      <div id="transfer-history-list" class="transfer-list"></div>
-    </div>
-
-    <!-- 月間カレンダー -->
-    <div class="dashboard-section">
-      <div class="section-header">
-        <button class="nav-btn-sm" onclick="changeCalendarMonth(-1)">＜ 前月</button>
-        <h3 id="calendar-month-title">----年--月</h3>
-        <button class="nav-btn-sm" onclick="changeCalendarMonth(1)">次月 ＞</button>
-      </div>
-      <div class="calendar-card">
-        <div class="calendar-grid-header">
-          <div class="cal-day-name sun">日</div>
-          <div class="cal-day-name">月</div>
-          <div class="cal-day-name">火</div>
-          <div class="cal-day-name">水</div>
-          <div class="cal-day-name">木</div>
-          <div class="cal-day-name">金</div>
-          <div class="cal-day-name sat">土</div>
+        <div class="dropdown-menu" id="dropdown-menu">
+          <button class="dropdown-item" onclick="openRulesModal()">ルール確認</button>
+          <button class="dropdown-item staff-only" id="item-requests" onclick="openRequestsModal()">
+            申請管理
+            <span class="menu-badge" id="dropdown-req-badge">0</span>
+          </button>
+          <button class="dropdown-item staff-only" id="item-roles" onclick="openRolesModal()">管理権限</button>
+          <button class="dropdown-item staff-only" id="item-master" onclick="openMasterConfig()">固定設定</button>
+          <button class="dropdown-item staff-only" id="item-data" onclick="openDataModal()">データ管理</button>
+          <button class="dropdown-item logout-item" onclick="handleLogout()">ログアウト</button>
         </div>
-        <div class="calendar-grid-body" id="calendar-grid"></div>
       </div>
-      <div class="calendar-hint">日付をタップすると、その日の振替画面が開きます</div>
     </div>
+  </header>
 
-  </div>
-</div>
+  <!-- ホーム画面 -->
+  <div id="dashboard-view" class="view-section">
+    <div class="dashboard-container">
 
-<!-- 振替画面（カレンダーをタップしたときに開く） -->
-<div id="shift-detail-view" class="view-section" style="display:none;">
-  <div class="back-bar">
-    <button class="btn-back" onclick="switchView('dashboard')">＜ 戻る</button>
-  </div>
+      <!-- 自分の出勤予定・振替（マイシフト） -->
+      <div class="dashboard-section my-shift-section">
+        <div class="section-header">
+          <h3 style="display: flex; align-items: center; gap: 6px;">
+            <span>自分の出勤予定・振替</span>
+          </h3>
+          <span class="my-shift-user-tag" id="my-shift-user-badge">ログイン中</span>
+        </div>
+        <div id="my-shift-container"></div>
+      </div>
 
-  <div class="week-nav">
-    <button class="nav-btn" onclick="changeWeek(-1)">＜ 前の週</button>
-    <div class="title-wrap">
-      <div class="current-month-title" id="week-title">----年--月</div>
-      <input type="date" id="jump-date" aria-label="日付を選んでその週へ移動">
-    </div>
-    <button class="nav-btn" onclick="changeWeek(1)">次の週 ＞</button>
-  </div>
+      <!-- 振替状況（何日の分をいつに振り替えたか） -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <h3 id="transfer-history-title">振替状況・履歴</h3>
+        </div>
+        <div id="transfer-history-list" class="transfer-list"></div>
+      </div>
 
-  <div class="day-tabs" id="day-tabs"></div>
+      <!-- 月間カレンダー -->
+      <div class="dashboard-section">
+        <div class="section-header">
+          <button class="nav-btn-sm" onclick="changeCalendarMonth(-1)">＜ 前月</button>
+          <h3 id="calendar-month-title">----年--月</h3>
+          <button class="nav-btn-sm" onclick="changeCalendarMonth(1)">次月 ＞</button>
+        </div>
+        <div class="calendar-card">
+          <div class="calendar-grid-header">
+            <div class="cal-day-name sun">日</div>
+            <div class="cal-day-name">月</div>
+            <div class="cal-day-name">火</div>
+            <div class="cal-day-name">水</div>
+            <div class="cal-day-name">木</div>
+            <div class="cal-day-name">金</div>
+            <div class="cal-day-name sat">土</div>
+          </div>
+          <div class="calendar-grid-body" id="calendar-grid"></div>
+        </div>
+        <div class="calendar-hint">日付をタップすると、その日の振替画面が開きます</div>
+      </div>
 
-  <div class="container">
-    <div id="status-container"></div>
-    <div class="member-list" id="member-list"></div>
-  </div>
-
-  <div class="bottom-bar">
-    <button class="btn-main" id="add-btn" onclick="addFreeShift()">+ 自由練習を追加</button>
-  </div>
-</div>
-
-<!-- 管理権限モーダル（adminのみ） -->
-<div class="modal" id="roles-modal">
-  <div class="modal-content">
-    <div class="modal-title">管理権限</div>
-    <p style="font-size: 11px; color: var(--ink-sub); margin-bottom: 12px;">名前を押すとメールアドレスとユーザー名を表示します。パスワードは安全のため表示できません（再設定メールを送れます）。</p>
-    <div id="roles-list"></div>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--line); color: var(--ink-sub);" onclick="closeModal('roles-modal')">閉じる</button>
-    </div>
-  </div>
-</div>
-
-<!-- 特例申請モーダル -->
-<div class="modal" id="special-request-modal">
-  <div class="modal-content">
-    <div class="modal-title" id="special-req-title">管理者への特例申請</div>
-
-    <div class="form-group">
-      <label>申請種別</label>
-      <select id="req-type" onchange="toggleReqTypeUI()">
-        <option value="absent">特例欠席（Shiftから外す）</option>
-        <option value="special_transfer">特別振替（回数消費なし）</option>
-      </select>
-    </div>
-
-    <div class="form-group" id="group-target-date" style="display:none;">
-      <label>振替希望日</label>
-      <input type="date" id="req-target-date">
-    </div>
-
-    <div class="form-group">
-      <label>申請理由（体調不良、公式行事など）</label>
-      <textarea id="req-reason" rows="3" placeholder="理由を入力してください"></textarea>
-    </div>
-
-    <input type="hidden" id="req-member-name">
-    <input type="hidden" id="req-member-index">
-
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('special-request-modal')">キャンセル</button>
-      <button class="btn-main" style="padding: 8px 16px; flex: initial;" onclick="submitSpecialRequest()">送信する</button>
     </div>
   </div>
-</div>
 
-<!-- 申請一覧モーダル -->
-<div class="modal" id="requests-modal">
-  <div class="modal-content">
-    <div class="modal-title">届いている特例申請</div>
-    <div id="requests-list"></div>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('requests-modal')">閉じる</button>
+  <!-- 振替画面（カレンダーをタップしたときに開く） -->
+  <div id="shift-detail-view" class="view-section" style="display:none;">
+    <div class="back-bar">
+      <button class="btn-back" onclick="switchView('dashboard')">＜ 戻る</button>
+    </div>
+
+    <div class="week-nav">
+      <button class="nav-btn" onclick="changeWeek(-1)">＜ 前の週</button>
+      <div class="title-wrap">
+        <div class="current-month-title" id="week-title">----年--月</div>
+        <input type="date" id="jump-date" aria-label="日付を選んでその週へ移動">
+      </div>
+      <button class="nav-btn" onclick="changeWeek(1)">次の週 ＞</button>
+    </div>
+
+    <div class="day-tabs" id="day-tabs"></div>
+
+    <div class="container">
+      <div id="status-container"></div>
+      <div class="member-list" id="member-list"></div>
+    </div>
+
+    <div class="bottom-bar">
+      <button class="btn-main" id="add-btn" onclick="addFreeShift()">+ 自由練習を追加</button>
     </div>
   </div>
-</div>
 
-<!-- 固定メンバー設定モーダル -->
-<div class="modal" id="master-modal">
-  <div class="modal-content">
-    <div class="modal-title">曜日ごとの固定メンバー設定</div>
-    <p style="font-size: 11px; color: var(--ink-sub); margin-bottom: 12px;">曜日ごとにメンバーを割当・削除できます。名前を入力すると候補が表示されます。</p>
-    <div id="master-inputs"></div>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--line); color: var(--ink-sub);" onclick="closeModal('master-modal')">キャンセル</button>
-      <button class="btn-main" style="padding: 8px 16px; flex: initial;" onclick="saveMasterConfig()">保存</button>
+  <!-- 管理権限モーダル（adminのみ） -->
+  <div class="modal" id="roles-modal">
+    <div class="modal-content">
+      <div class="modal-title">管理権限</div>
+      <p style="font-size: 11px; color: var(--ink-sub); margin-bottom: 12px;">
+        名前を押すとメールアドレスとユーザー名を表示します。パスワードは安全のため表示できません（再設定メールを送れます）。</p>
+      <div id="roles-list"></div>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--line); color: var(--ink-sub);"
+          onclick="closeModal('roles-modal')">閉じる</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- 振替履歴（すべて・月別） -->
-<div class="modal" id="all-history-modal">
-  <div class="modal-content" style="max-width: 520px; max-height: 92vh;">
-    <div class="modal-title">振替履歴（すべて）</div>
-    <div id="all-history-list"></div>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('all-history-modal')">閉じる</button>
+  <!-- 特例申請モーダル -->
+  <div class="modal" id="special-request-modal">
+    <div class="modal-content">
+      <div class="modal-title" id="special-req-title">管理者への特例申請</div>
+
+      <div class="form-group">
+        <label>申請種別</label>
+        <select id="req-type" onchange="toggleReqTypeUI()">
+          <option value="absent">特例欠席</option>
+          <option value="special_transfer">特別振替（回数消費なし）</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="group-target-date" style="display:none;">
+        <label>振替希望日</label>
+        <input type="date" id="req-target-date">
+      </div>
+
+      <div class="form-group">
+        <label>申請理由（体調不良、公式行事など）</label>
+        <textarea id="req-reason" rows="3" placeholder="理由を入力してください"></textarea>
+      </div>
+
+      <input type="hidden" id="req-member-name">
+      <input type="hidden" id="req-member-index">
+
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('special-request-modal')">キャンセル</button>
+        <button class="btn-main" style="padding: 8px 16px; flex: initial;"
+          onclick="submitSpecialRequest()">送信する</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- 通常振替モーダル -->
-<div class="modal" id="reschedule-modal">
-  <div class="modal-content">
-    <div class="modal-title" id="reschedule-modal-title">振替先の選択</div>
-    <div class="form-group">
-      <label>振替希望日</label>
-      <input type="date" id="reschedule-date-input">
-      <div class="form-hint" id="reschedule-range-hint"></div>
-      <div id="reschedule-date-error" style="display:none; color:#c0392b; font-size:12px; font-weight:600; margin-top:6px;"></div>
-    </div>
-    <div class="form-group" id="reschedule-ext-group" style="display:none;">
-      <label>延長が必要な理由</label>
-      <textarea id="reschedule-ext-reason" rows="3" maxlength="200" placeholder="期間外の日程が必要な理由を入力してください"></textarea>
-      <div class="form-hint">幹部・管理者の承認後に振替が確定します</div>
-    </div>
-    <input type="hidden" id="reschedule-member-name">
-    <input type="hidden" id="reschedule-member-index">
-    <button type="button" class="link-btn" id="reschedule-ext-toggle" onclick="toggleExtensionMode()">振替日程延長</button>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('reschedule-modal')">キャンセル</button>
-      <button class="btn-main" id="reschedule-confirm" style="padding: 8px 16px; flex: initial;" onclick="executeReschedule()">振替を確定する</button>
-      <button class="btn-main" id="reschedule-ext-submit" style="padding: 8px 16px; flex: initial; display:none;" onclick="submitExtensionRequest()">延長を申請する</button>
+  <!-- 申請一覧モーダル -->
+  <div class="modal" id="requests-modal">
+    <div class="modal-content">
+      <div class="modal-title">届いている特例申請</div>
+      <div id="requests-list"></div>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('requests-modal')">閉じる</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- クイック振替モーダル（マイシフト用） -->
-<div class="modal" id="quick-reschedule-modal">
-  <div class="modal-content" style="max-width: 460px;">
-    <div class="modal-title" id="quick-reschedule-title">振替先の選択</div>
-    <div id="quick-reschedule-warning"></div>
-
-    <div style="font-size: 13px; color: var(--text); background: var(--paper); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--line);">
-      振替元の出勤日: <strong id="quick-reschedule-origin-label" style="color: var(--primary);"></strong>
-    </div>
-
-    <div class="form-group" id="quick-grid-group">
-      <label style="font-weight: bold;">振替可能な日程から選ぶ（前後6日・固定曜日を除く）</label>
-      <div class="target-date-picker-grid" id="quick-target-dates-grid"></div>
-    </div>
-
-    <div class="form-group">
-      <label style="font-weight: bold;">またはカレンダーから日付を選ぶ</label>
-      <input type="date" id="quick-reschedule-custom-date" onchange="onQuickCustomDateSelect(this.value)">
-      <div id="quick-date-error" style="display:none; color:#c0392b; font-size:12px; font-weight:600; margin-top:6px; white-space:pre-line;"></div>
-    </div>
-
-    <div class="form-group" id="quick-ext-group" style="display:none;">
-      <label>延長が必要な理由</label>
-      <textarea id="quick-ext-reason" rows="3" maxlength="200" placeholder="期間外の日程が必要な理由を入力してください"></textarea>
-      <div class="form-hint">幹部・管理者の承認後に振替が確定します</div>
-    </div>
-
-    <input type="hidden" id="quick-selected-target-date">
-    <input type="hidden" id="quick-reschedule-origin-date">
-
-    <button type="button" class="link-btn" id="quick-ext-toggle" onclick="toggleQuickExtensionMode()">振替日程延長</button>
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('quick-reschedule-modal')">キャンセル</button>
-      <button class="btn-main" id="quick-reschedule-submit-btn" style="padding: 8px 16px; flex: initial;" onclick="confirmQuickReschedule()">この日に振替を確定する</button>
-      <button class="btn-main" id="quick-ext-submit-btn" style="padding: 8px 16px; flex: initial; display:none;" onclick="submitQuickExtension()">延長を申請する</button>
+  <!-- 固定メンバー設定モーダル -->
+  <div class="modal" id="master-modal">
+    <div class="modal-content">
+      <div class="modal-title">曜日ごとの固定メンバー設定</div>
+      <p style="font-size: 11px; color: var(--ink-sub); margin-bottom: 12px;">曜日ごとにメンバーを割当・削除できます。名前を入力すると候補が表示されます。</p>
+      <div id="master-inputs"></div>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--line); color: var(--ink-sub);"
+          onclick="closeModal('master-modal')">キャンセル</button>
+        <button class="btn-main" style="padding: 8px 16px; flex: initial;" onclick="saveMasterConfig()">保存</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- データ管理モーダル -->
-<!-- ルール確認（閲覧は全員、編集は admin / 幹部） -->
-<div class="modal" id="rules-modal">
-  <div class="modal-content">
-    <div class="modal-title">ルール確認</div>
-
-    <div id="rules-view">
-      <div id="rules-text" class="rules-text"></div>
-      <div id="rules-meta" class="form-hint" style="margin-top: 10px;"></div>
-    </div>
-
-    <div class="form-group" id="rules-edit" style="display:none;">
-      <label for="rules-input">ルール本文</label>
-      <textarea id="rules-input" rows="14" maxlength="5000" placeholder="振替のルールや注意事項を入力してください"></textarea>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-action" id="rules-edit-btn" style="display:none;" onclick="startRulesEdit()">編集</button>
-      <button class="btn-action" id="rules-cancel-btn" style="display:none; border-color: var(--border); color: var(--text-sub);" onclick="cancelRulesEdit()">キャンセル</button>
-      <button class="btn-main" id="rules-save-btn" style="display:none; padding: 8px 16px; flex: initial;" onclick="saveRules()">保存する</button>
-      <button class="btn-action" id="rules-close-btn" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('rules-modal')">閉じる</button>
+  <!-- 振替履歴（すべて・月別） -->
+  <div class="modal" id="all-history-modal">
+    <div class="modal-content" style="max-width: 520px; max-height: 92vh;">
+      <div class="modal-title">振替履歴（すべて）</div>
+      <div id="all-history-list"></div>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('all-history-modal')">閉じる</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="modal" id="data-modal">
-  <div class="modal-content">
-    <div class="modal-title">データ管理・バックアップ</div>
-
-    <div class="form-group">
-      <label>データバックアップ（JSON出力）</label>
-      <button class="btn-action" style="width: 100%;" onclick="exportData()">バックアップファイルを保存</button>
-    </div>
-
-    <div class="form-group">
-      <label>データ復元（JSON読み込み）</label>
-      <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="font-size: 12px;">
-    </div>
-
-    <div class="data-section">
-      <label style="font-size: 12px; color: var(--text-sub); font-weight: bold;">リセット操作</label>
-      <button class="btn-danger-outline" onclick="resetRescheduleCounts()">振替回数のみ初期化（新学期など）</button>
-      <button class="btn-danger-outline" onclick="resetAllData()">すべてのデータを初期化</button>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);" onclick="closeModal('data-modal')">閉じる</button>
+  <!-- 通常振替モーダル -->
+  <div class="modal" id="reschedule-modal">
+    <div class="modal-content">
+      <div class="modal-title" id="reschedule-modal-title">振替先の選択</div>
+      <div class="form-group">
+        <label>振替希望日</label>
+        <input type="date" id="reschedule-date-input">
+        <div class="form-hint" id="reschedule-range-hint"></div>
+        <div id="reschedule-date-error"
+          style="display:none; color:#c0392b; font-size:12px; font-weight:600; margin-top:6px;"></div>
+      </div>
+      <div class="form-group" id="reschedule-ext-group" style="display:none;">
+        <label>延長が必要な理由</label>
+        <textarea id="reschedule-ext-reason" rows="3" maxlength="200" placeholder="期間外の日程が必要な理由を入力してください"></textarea>
+        <div class="form-hint">幹部・管理者の承認後に振替が確定します</div>
+      </div>
+      <input type="hidden" id="reschedule-member-name">
+      <input type="hidden" id="reschedule-member-index">
+      <button type="button" class="link-btn" id="reschedule-ext-toggle" onclick="toggleExtensionMode()">振替日程延長</button>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('reschedule-modal')">キャンセル</button>
+        <button class="btn-main" id="reschedule-confirm" style="padding: 8px 16px; flex: initial;"
+          onclick="executeReschedule()">振替を確定する</button>
+        <button class="btn-main" id="reschedule-ext-submit" style="padding: 8px 16px; flex: initial; display:none;"
+          onclick="submitExtensionRequest()">延長を申請する</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script type="module" src="app.js?v=21"></script>
+  <!-- クイック振替モーダル（マイシフト用） -->
+  <div class="modal" id="quick-reschedule-modal">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-title" id="quick-reschedule-title">振替先の選択</div>
+      <div id="quick-reschedule-warning"></div>
+
+      <div
+        style="font-size: 13px; color: var(--text); background: var(--paper); padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--line);">
+        振替元の出勤日: <strong id="quick-reschedule-origin-label" style="color: var(--primary);"></strong>
+      </div>
+
+      <div class="form-group" id="quick-grid-group">
+        <label style="font-weight: bold;">振替可能な日程から選ぶ（前後6日・固定曜日を除く）</label>
+        <div class="target-date-picker-grid" id="quick-target-dates-grid"></div>
+      </div>
+
+      <div class="form-group">
+        <label style="font-weight: bold;">またはカレンダーから日付を選ぶ</label>
+        <input type="date" id="quick-reschedule-custom-date" onchange="onQuickCustomDateSelect(this.value)">
+        <div id="quick-date-error"
+          style="display:none; color:#c0392b; font-size:12px; font-weight:600; margin-top:6px; white-space:pre-line;">
+        </div>
+      </div>
+
+      <div class="form-group" id="quick-ext-group" style="display:none;">
+        <label>延長が必要な理由</label>
+        <textarea id="quick-ext-reason" rows="3" maxlength="200" placeholder="期間外の日程が必要な理由を入力してください"></textarea>
+        <div class="form-hint">幹部・管理者の承認後に振替が確定します</div>
+      </div>
+
+      <input type="hidden" id="quick-selected-target-date">
+      <input type="hidden" id="quick-reschedule-origin-date">
+
+      <button type="button" class="link-btn" id="quick-ext-toggle" onclick="toggleQuickExtensionMode()">振替日程延長</button>
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('quick-reschedule-modal')">キャンセル</button>
+        <button class="btn-main" id="quick-reschedule-submit-btn" style="padding: 8px 16px; flex: initial;"
+          onclick="confirmQuickReschedule()">この日に振替を確定する</button>
+        <button class="btn-main" id="quick-ext-submit-btn" style="padding: 8px 16px; flex: initial; display:none;"
+          onclick="submitQuickExtension()">延長を申請する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- データ管理モーダル -->
+  <!-- ルール確認（閲覧は全員、編集は admin / 幹部） -->
+  <div class="modal" id="rules-modal">
+    <div class="modal-content">
+      <div class="modal-title">ルール確認</div>
+
+      <div id="rules-view">
+        <div id="rules-text" class="rules-text"></div>
+        <div id="rules-meta" class="form-hint" style="margin-top: 10px;"></div>
+      </div>
+
+      <div class="form-group" id="rules-edit" style="display:none;">
+        <label for="rules-input">ルール本文</label>
+        <textarea id="rules-input" rows="14" maxlength="5000" placeholder="振替のルールや注意事項を入力してください"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-action" id="rules-edit-btn" style="display:none;" onclick="startRulesEdit()">編集</button>
+        <button class="btn-action" id="rules-cancel-btn"
+          style="display:none; border-color: var(--border); color: var(--text-sub);"
+          onclick="cancelRulesEdit()">キャンセル</button>
+        <button class="btn-main" id="rules-save-btn" style="display:none; padding: 8px 16px; flex: initial;"
+          onclick="saveRules()">保存する</button>
+        <button class="btn-action" id="rules-close-btn" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('rules-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="data-modal">
+    <div class="modal-content">
+      <div class="modal-title">データ管理・バックアップ</div>
+
+      <div class="form-group">
+        <label>データバックアップ（JSON出力）</label>
+        <button class="btn-action" style="width: 100%;" onclick="exportData()">バックアップファイルを保存</button>
+      </div>
+
+      <div class="form-group">
+        <label>データ復元（JSON読み込み）</label>
+        <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="font-size: 12px;">
+      </div>
+
+      <div class="data-section">
+        <label style="font-size: 12px; color: var(--text-sub); font-weight: bold;">リセット操作</label>
+        <button class="btn-danger-outline" onclick="resetRescheduleCounts()">振替回数のみ初期化（新学期など）</button>
+        <button class="btn-danger-outline" onclick="resetAllData()">すべてのデータを初期化</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-action" style="border-color: var(--border); color: var(--text-sub);"
+          onclick="closeModal('data-modal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js?v=21"></script>
 </body>
+
 </html>
