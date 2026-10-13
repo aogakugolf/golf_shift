@@ -363,7 +363,12 @@ function canOperateOn(memberName) {
   return normName(memberName) === normName(currentMemberName);
 }
 
-onAuthStateChanged(auth, async user => {
+// ログイン状態を画面に反映する。新規登録の完了後にも呼び直す（登録直後はプロフィール保存前に一度呼ばれるため）
+let authApplySeq = 0;
+onAuthStateChanged(auth, user => { applyAuthUser(user); });
+
+async function applyAuthUser(user) {
+  const seq = ++authApplySeq;
   if (!user) {
     currentUserRole = null;
     currentMemberName = '';
@@ -373,7 +378,9 @@ onAuthStateChanged(auth, async user => {
     const loginPass = document.getElementById('login-pass');
     if (loginId) loginId.value = '';
     if (loginPass) loginPass.value = '';
-    showLogin();
+    // 新規登録に失敗して作りかけのアカウントを削除した場合は、登録画面（エラー表示）のままにする
+    const signupPanel = document.getElementById('signup-panel');
+    if (!(signupPanel && signupPanel.style.display === 'block')) showLogin();
     const overlay = document.getElementById('login-overlay');
     if (overlay) overlay.style.display = 'flex';
     return;
@@ -396,9 +403,13 @@ onAuthStateChanged(auth, async user => {
   } catch (e) {
     console.warn('Role fetch warning:', e);
   }
+  if (seq !== authApplySeq) return; // 後から呼ばれた反映処理を優先（古い結果で上書きしない）
 
-  // アプリ側で削除されたユーザー（プロフィールが無い）はログインさせない。登録処理中は除く。
-  if (profileMissing && !signupInProgress) {
+  // 新規登録の途中（プロフィール保存前）は画面を切り替えない。登録完了後に applyAuthUser が呼び直される
+  if (profileMissing && signupInProgress) return;
+
+  // アプリ側で削除されたユーザー（プロフィールが無い）はログインさせない。
+  if (profileMissing) {
     await signOut(auth);
     const errorDiv = document.getElementById('login-error');
     if (errorDiv) errorDiv.style.display = 'block';
@@ -414,6 +425,7 @@ onAuthStateChanged(auth, async user => {
     }
     alert(`「${fullName}」は別のアカウントでも登録されています。\n「管理権限」から重複しているアカウントを確認してください。`);
   }
+  if (seq !== authApplySeq) return;
 
   currentUserRole = role;
   currentMemberName = fullName;
@@ -426,7 +438,7 @@ onAuthStateChanged(auth, async user => {
   updateRoleUI();
   startListeners(role === 'admin' || role === 'executive');
   render();
-});
+}
 
 function updateRoleUI() {
   const isAdmin = currentUserRole === 'admin';
@@ -434,7 +446,7 @@ function updateRoleUI() {
   const hasMenu = isAdmin || isExec;
   // メニューはログイン中の全員に表示。管理系の項目（.staff-only）は admin / 幹部のみ
   const adminMenuArea = document.getElementById('admin-menu-area');
-  if (adminMenuArea) adminMenuArea.style.display = currentMemberName ? 'block' : 'none';
+  if (adminMenuArea) adminMenuArea.style.display = currentUserRole ? 'block' : 'none';
   document.querySelectorAll('#admin-menu-area .staff-only').forEach(el => {
     el.style.display = hasMenu ? '' : 'none';
   });
@@ -591,7 +603,7 @@ async function handleSignup(e) {
       const nameTaken = await getDoc(doc(db, 'fullnames', fullName));
       if (nameTaken.exists() && nameTaken.data().uid !== cred.user.uid) {
         await deleteUser(cred.user);
-        showErr('この名前は既に登録されています。ご本人の場合は幹部・管理者に連絡してください。');
+        showErr('この名前は既に登録されているため、新規作成できません。');
         return;
       }
     } catch (checkErr) {
@@ -616,6 +628,9 @@ async function handleSignup(e) {
   if (created) {
     if (document.getElementById('signup-pass')) document.getElementById('signup-pass').value = '';
     if (document.getElementById('signup-error')) document.getElementById('signup-error').style.display = 'none';
+    showLogin(); // 次にログアウトしたときはログイン画面を出す
+    // プロフィール保存後に改めてログイン状態を反映（名前・メニューを表示）
+    await applyAuthUser(auth.currentUser);
   }
 }
 
