@@ -885,8 +885,15 @@ function renderContent() {
     .sort((a, b) => Number(isMine(b.item)) - Number(isMine(a.item)) || a.index - b.index);
 
   document.getElementById('member-list').innerHTML = ordered.map(({ item, index }) => {
-    const used = getRescheduleUsed(item.name, dayName);
+    // 振替枠の人は振替元の曜日枠で数える（その日の曜日枠ではない）
+    const isTransferItem = item.type === 'transfer' || item.type === 'special_transfer';
+    const slotDay = isTransferItem && item.originDate ? getDayName(item.originDate) : dayName;
+    const used = getRescheduleUsed(item.name, slotDay);
     const remaining = Math.max(0, maxReschedulePerDay - used);
+    // 自由練習は振替回数と関係ないので残数を出さない
+    const subLine = item.type === 'free'
+      ? ''
+      : `<span class="member-sub">${esc(slotDay)}曜枠 振替残: ${remaining} / ${maxReschedulePerDay} 回</span>`;
 
     let tag = '';
     if (item.type === 'transfer') {
@@ -917,7 +924,7 @@ function renderContent() {
       <div class="member-card${isMine(item) ? ' mine' : ''}">
         <div class="member-info">
           <div><span class="member-name">${esc(item.name)}</span>${tag}</div>
-          <span class="member-sub">${esc(dayName)}曜枠 振替残: ${remaining} / ${maxReschedulePerDay} 回</span>
+          ${subLine}
         </div>
         <div class="action-group">${actions}</div>
       </div>`;
