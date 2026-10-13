@@ -197,7 +197,10 @@ async function saveStorage() {
       });
       batch.set(doc(db, 'counts', day), { c });
     });
-    dirty.reqs.forEach(id => batch.delete(doc(db, 'requests', String(id))));
+    dirty.reqs.forEach(id => {
+      batch.delete(doc(db, 'requests', String(id)));
+      batch.delete(doc(db, 'requestPhotos', String(id))); // 添付写真も一緒に削除（無ければ何もしない）
+    });
     if (dirty.master) batch.set(doc(db, 'config', 'master'), masterConfig);
     dirty.dates.clear(); dirty.days.clear(); dirty.reqs.clear(); dirty.master = false;
     await batch.commit();
@@ -1756,6 +1759,7 @@ function openSpecialRequestModal(name, index) {
   document.getElementById('req-reason').value = '';
   document.getElementById('req-target-date').value = selectedDateStr;
   setMinDate('req-target-date');
+  clearReqPhoto();
   toggleReqTypeUI();
   document.getElementById('special-request-modal').style.display = 'flex';
 }
@@ -1793,10 +1797,114 @@ function submitSpecialRequest() {
     targetDate: type === 'special_transfer' ? targetDate : '',
     createdAt: new Date().toLocaleString('ja-JP')
   };
-  setDoc(doc(db, 'requests', String(reqObj.id)), reqObj)
+  // 写真は申請本体とは別ドキュメント（requestPhotos/{id}）に保存し、申請と同時に書き込む
+  const photo = reqPhotoDataUrl;
+  if (photo) reqObj.hasPhoto = true;
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'requests', String(reqObj.id)), reqObj);
+  if (photo) batch.set(doc(db, 'requestPhotos', String(reqObj.id)), { data: photo });
+  batch.commit()
     .catch(() => alert('申請の送信に失敗しました。もう一度お試しください。'));
   closeModal('special-request-modal');
+  clearReqPhoto();
   alert('管理者に申請を送信しました。承認されるまでしばらくお待ちください。');
+}
+
+/* ---- 特例申請の写真添付 ----
+   Firestore の1ドキュメント上限（1MiB）に収まるよう、端末側で縮小・JPEG圧縮して data URL で保存する */
+const REQ_PHOTO_MAX_SIDE = 1280;
+const REQ_PHOTO_MAX_CHARS = 700000;
+let reqPhotoDataUrl = '';
+
+function clearReqPhoto() {
+  reqPhotoDataUrl = '';
+  const input = document.getElementById('req-photo');
+  if (input) input.value = '';
+  const preview = document.getElementById('req-photo-preview');
+  if (preview) preview.style.display = 'none';
+  const img = document.getElementById('req-photo-img');
+  if (img) img.removeAttribute('src');
+}
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image decode failed')); };
+    img.src = url;
+  });
+}
+
+async function compressPhoto(file) {
+  const img = await loadImageFromFile(file);
+  let side = REQ_PHOTO_MAX_SIDE;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; // 透過PNGの背景を白に
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL('image/jpeg', attempt < 3 ? 0.75 : 0.6);
+    if (dataUrl.length <= REQ_PHOTO_MAX_CHARS) return dataUrl;
+    side = Math.round(side * 0.75);
+  }
+  throw new Error('photo too large');
+}
+
+async function onReqPhotoSelected(input) {
+  const file = input.files && input.files[0];
+  if (!file) { clearReqPhoto(); return; }
+  if (!file.type.startsWith('image/')) {
+    alert('画像ファイルを選択してください。');
+    clearReqPhoto();
+    return;
+  }
+  try {
+    reqPhotoDataUrl = await compressPhoto(file);
+    document.getElementById('req-photo-img').src = reqPhotoDataUrl;
+    document.getElementById('req-photo-preview').style.display = 'flex';
+  } catch (e) {
+    console.warn('Photo processing failed:', e);
+    alert('この画像は読み込めませんでした。別の写真（JPEG・PNG）を選んでください。');
+    clearReqPhoto();
+  }
+}
+
+// 申請一覧から添付写真を表示（admin / 幹部）
+async function showRequestPhoto(reqId) {
+  if (!requireStaff()) return;
+  let data = '';
+  try {
+    const snap = await getDoc(doc(db, 'requestPhotos', String(reqId)));
+    data = snap.exists() && typeof snap.data().data === 'string' ? snap.data().data : '';
+  } catch (e) {
+    console.warn('Photo load failed:', e);
+  }
+  if (!data.startsWith('data:image/')) {
+    alert('写真を読み込めませんでした。');
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'modal';
+  wrap.style.display = 'flex';
+  wrap.style.zIndex = '10000';
+  wrap.innerHTML = `
+    <div class="modal-content photo-viewer">
+      <div class="modal-title">添付写真</div>
+      <img alt="特例申請の添付写真">
+      <div class="modal-actions">
+        <button class="btn-action" data-close>閉じる</button>
+      </div>
+    </div>`;
+  wrap.querySelector('img').src = data;
+  wrap.addEventListener('click', e => {
+    if (e.target === wrap || e.target.closest('[data-close]')) wrap.remove();
+  });
+  document.body.appendChild(wrap);
 }
 
 /* ============ 申請管理（管理者） ============ */
@@ -1823,6 +1931,7 @@ function openRequestsModal() {
             対象日: ${esc(req.originalDate)}${isAbsent ? '' : ` ➔ 振替希望: ${esc(req.targetDate)}`}
           </div>
           <div class="request-reason">理由: ${esc(req.reason)}</div>
+          ${req.hasPhoto ? `<button type="button" class="btn-action" style="font-size:11px; margin-bottom:6px;" data-req-photo data-id="${id}">📷 添付写真を見る</button>` : ''}
           <div style="font-size:10px; color:#999; margin-bottom:8px;">申請日時: ${esc(req.createdAt)}</div>
           <div style="display:flex; gap:6px; justify-content:flex-end;">
             <button class="btn-action btn-cancel" data-req-action="reject" data-id="${id}">却下</button>
@@ -2395,6 +2504,8 @@ if (historyListEl) {
 const reqListEl = document.getElementById('requests-list');
 if (reqListEl) {
   reqListEl.addEventListener('click', e => {
+    const photoBtn = e.target.closest('button[data-req-photo]');
+    if (photoBtn) { showRequestPhoto(Number(photoBtn.dataset.id)); return; }
     const btn = e.target.closest('button[data-req-action]');
     if (!btn) return;
     const id = Number(btn.dataset.id);
@@ -2411,7 +2522,7 @@ if ('serviceWorker' in navigator) {
 // type="module" ではHTMLのonclickから関数が見えないので、windowに公開する
 Object.assign(window, {
   handleLogin, handleLogout, toggleDropdownMenu, openRequestsModal, openMasterConfig,
-  openRulesModal, startRulesEdit, cancelRulesEdit, saveRules, openLimitModal, saveLimit,
+  openRulesModal, startRulesEdit, cancelRulesEdit, saveRules, openLimitModal, saveLimit, onReqPhotoSelected, clearReqPhoto,
   openDataModal, changeWeek, addFreeShift, toggleReqTypeUI, closeModal, submitSpecialRequest,
   saveMasterConfig, executeReschedule, exportData, importData, resetRescheduleCounts, resetAllData,
   switchView, changeCalendarMonth, onCalendarDateClick,

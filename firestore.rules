@@ -185,7 +185,8 @@ service cloud.firestore {
     match /requests/{id} {
       allow create: if signedIn()
         && id.matches('^[0-9]{10,16}$')
-        && request.resource.data.keys().hasOnly(['id', 'name', 'originalDate', 'type', 'reason', 'targetDate', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['id', 'name', 'originalDate', 'type', 'reason', 'targetDate', 'createdAt', 'hasPhoto'])
+        && request.resource.data.get('hasPhoto', true) == true
         && request.resource.data.id is number
         && (isStaff() || (hasUserDoc() && ownsMyName() && request.resource.data.name == myName()))
         && request.resource.data.type in ['absent', 'special_transfer', 'extension_transfer']
@@ -196,6 +197,21 @@ service cloud.firestore {
         && request.resource.data.targetDate is string
         && request.resource.data.createdAt is string;
       allow read, update, delete: if isStaff();
+    }
+
+    // 特例申請の添付写真（requestPhotos/{申請ID} = { data: 'data:image/jpeg;base64,...' }）
+    // 作成は申請と同時（同じバッチ）で、その申請を作れる人のみ。閲覧・削除は admin / 幹部。上書き不可。
+    match /requestPhotos/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['data'])
+        && request.resource.data.data is string
+        && request.resource.data.data.size() <= 900000
+        && !exists(/databases/$(database)/documents/requests/$(id))
+        && getAfter(/databases/$(database)/documents/requests/$(id)).data.get('hasPhoto', false) == true
+        && (isStaff() || (hasUserDoc() && ownsMyName()
+            && getAfter(/databases/$(database)/documents/requests/$(id)).data.name == myName()));
+      allow read, delete: if isStaff();
+      allow update: if false;
     }
   }
 }
