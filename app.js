@@ -952,9 +952,14 @@ function renderContent() {
       if (item.type === 'free') {
         actions = `<button class="btn-action btn-cancel" data-action="remove-free" data-index="${index}">削除</button>`;
       } else if (item.type === 'transfer' || item.type === 'special_transfer') {
-        actions = isSameDayLocked(selectedDateStr, item.originDate)
-          ? specialBtn
+        // 振替し直しは今いる日が当日でなければ可。取消は元の日・今いる日のどちらも当日でなければ可
+        const retransferBtn = isSameDayLocked(selectedDateStr)
+          ? ''
+          : `<button class="btn-action" data-action="reschedule" data-index="${index}">振替し直す</button>`;
+        const cancelBtn = isSameDayLocked(selectedDateStr, item.originDate)
+          ? ''
           : `<button class="btn-action btn-cancel" data-action="cancel-transfer" data-index="${index}">振替取消</button>`;
+        actions = (retransferBtn || cancelBtn) ? retransferBtn + cancelBtn : specialBtn;
       } else {
         actions = isSameDayLocked(selectedDateStr)
           ? specialBtn
@@ -1185,6 +1190,7 @@ function renderTransferHistory() {
           <span class="route-arrow">➔</span>
           <span class="date-pill target">${esc(req.targetDate)}</span>
         </div>
+        ${requestRetransferNote(req) ? `<div style="font-size:11px; color:var(--text-sub); margin-top:4px;">${requestRetransferNote(req)}</div>` : ''}
         <div class="request-reason">理由: ${esc(req.reason)}</div>
         <div style="display:flex; gap:6px; justify-content:flex-end; margin-top:8px;">
           <button class="btn-action btn-cancel" data-req-action="reject" data-id="${Number(req.id)}">却下</button>
@@ -1208,6 +1214,8 @@ function renderTransferHistory() {
 /* ============ マイシフト・自分の振替 ============ */
 let quickSelectedOriginDate = '';
 let quickSelectedTargetDate = '';
+let quickBaseOrigin = '';      // 振替の基準日（振替し直しなら最初の振替元）
+let quickIsRetransfer = false; // 振替済みの枠を振替し直しているか
 let quickBlocked = false;      // 上限・最低人数で振替自体ができない状態
 let quickExtensionMode = false; // 振替日程延長申請モード
 
@@ -1315,13 +1323,17 @@ function renderMyShift() {
               <button class="btn-reschedule-quick" onclick="openQuickRescheduleModal('${esc(dateStr)}')">
                 ⇄ この日を振替する
               </button>${detailBtn}`;
-          } else if (isTransfer && isSameDayLocked(dateStr, item.originDate)) {
-            actionButtons = sameDayNote + detailBtn;
           } else if (isTransfer) {
-            actionButtons = `
+            // 振替し直しは今いる日が当日でなければ可。取消は元の日・今いる日のどちらも当日でなければ可
+            const retransferBtn = !isSameDayLocked(dateStr) && item.originDate ? `
+              <button class="btn-reschedule-quick" onclick="openQuickRescheduleModal('${esc(dateStr)}')">
+                ⇄ 振替し直す
+              </button>` : '';
+            const cancelBtn = !isSameDayLocked(dateStr, item.originDate) ? `
               <button class="btn-action btn-cancel" style="font-size:12px;" onclick="cancelReschedule({ name: '${esc(currentMemberName)}', originDate: '${esc(item.originDate || '')}', type: '${esc(item.type)}' }, '${esc(dateStr)}')">
                 振替取消（${esc(item.originDate || '元の日')}に戻す）
-              </button>`;
+              </button>` : '';
+            actionButtons = (retransferBtn || cancelBtn) ? retransferBtn + cancelBtn : sameDayNote + detailBtn;
           } else if (isFree) {
             actionButtons = `
               <button class="btn-action btn-cancel" style="font-size:12px;" onclick="removeFreeShift({ name: '${esc(currentMemberName)}', originDate: '${esc(dateStr)}', type: 'free' })">
@@ -1372,32 +1384,41 @@ function renderMyShift() {
   `;
 }
 
+// originDateStr: 今その人がいる日（振替済みの枠なら振替先の日）
 function openQuickRescheduleModal(originDateStr) {
   if (isSameDayLocked(originDateStr)) {
     alert(SAME_DAY_LOCK_MSG);
     return;
   }
+  const members = getShiftObjectsForDate(originDateStr);
+  const myItem = members.find(m => normName(m.name) === normName(currentMemberName));
+  quickIsRetransfer = isRetransferItem(myItem);
+  quickBaseOrigin = getBaseOrigin(myItem, originDateStr);
   quickSelectedOriginDate = originDateStr;
   quickSelectedTargetDate = '';
 
   const originLabel = document.getElementById('quick-reschedule-origin-label');
-  const originD = new Date(originDateStr.replace(/-/g, '/'));
+  const fmt = s => {
+    const d = new Date(s.replace(/-/g, '/'));
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 (${getDayName(s)})`;
+  };
   if (originLabel) {
-    originLabel.textContent = `${originD.getFullYear()}年${originD.getMonth() + 1}月${originD.getDate()}日 (${getDayName(originDateStr)})`;
+    originLabel.textContent = quickIsRetransfer
+      ? `${fmt(originDateStr)}（振替済み・元の練習日 ${fmt(quickBaseOrigin)}）`
+      : fmt(originDateStr);
   }
 
   const warningDiv = document.getElementById('quick-reschedule-warning');
   const submitBtn = document.getElementById('quick-reschedule-submit-btn');
-  const members = getShiftObjectsForDate(originDateStr);
   const totalStaff = members.length;
-  const dayName = getDayName(originDateStr);
+  const dayName = getDayName(quickBaseOrigin);
   const used = getRescheduleUsed(currentMemberName, dayName);
 
   let isBlocked = false;
   let warnMsg = '';
 
-  // 振替上限チェック
-  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
+  // 振替上限チェック（振替し直しは回数を消費しないので対象外）
+  if (!quickIsRetransfer && currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
     isBlocked = true;
     warnMsg = `【${dayName}曜日枠】の振替上限（${maxReschedulePerDay}回）に達しています。これ以上振替できません。特別振替が必要な場合は「特例申請」を行ってください。`;
   }
@@ -1407,14 +1428,17 @@ function openQuickRescheduleModal(originDateStr) {
     warnMsg = `現在 ${originDateStr} は参加者が ${totalStaff} 名です。振替すると ${totalStaff - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。先に代理メンバーを立ててください。`;
   }
 
-  const notOpen = getTransferNotOpenMsg(originDateStr);
+  const notOpen = getTransferNotOpenMsg(quickBaseOrigin);
+  const retransferNote = quickIsRetransfer
+    ? `<div class="staff-alert-banner" style="background:var(--sky-tint); border-color:var(--sky); color:#075985;">⇄ 振替し直しです。振替可能期間は元の練習日（${esc(quickBaseOrigin)}）が基準で、振替回数は消費しません。</div>`
+    : '';
   if (warningDiv) {
     if (isBlocked) {
       warningDiv.innerHTML = `<div class="staff-alert-banner">⚠️ <strong>振替不可:</strong><br>${esc(warnMsg)}</div>`;
     } else if (notOpen) {
-      warningDiv.innerHTML = `<div class="staff-alert-banner">⏰ ${esc(notOpen)}<br>受付時間外でも「振替日程延長」の申請は可能です。</div>`;
+      warningDiv.innerHTML = retransferNote + `<div class="staff-alert-banner">⏰ ${esc(notOpen)}<br>受付時間外でも「振替日程延長」の申請は可能です。</div>`;
     } else {
-      warningDiv.innerHTML = '';
+      warningDiv.innerHTML = retransferNote;
     }
   }
 
@@ -1427,7 +1451,7 @@ function openQuickRescheduleModal(originDateStr) {
   setQuickExtensionMode(false);
 
   // 候補日リスト（今日以降の活動日をピックアップ）
-  renderQuickTargetDatesGrid(originDateStr);
+  renderQuickTargetDatesGrid(quickBaseOrigin, originDateStr);
 
   const customDateInput = document.getElementById('quick-reschedule-custom-date');
   if (customDateInput) {
@@ -1443,7 +1467,8 @@ function openQuickRescheduleModal(originDateStr) {
   if (modal) modal.style.display = 'flex';
 }
 
-function renderQuickTargetDatesGrid(originDateStr) {
+// originDateStr: 基準日（最初の振替元）、fromDateStr: 今いる日（振替し直しのときだけ異なる）
+function renderQuickTargetDatesGrid(originDateStr, fromDateStr = originDateStr) {
   const grid = document.getElementById('quick-target-dates-grid');
   if (!grid) return;
 
@@ -1454,7 +1479,7 @@ function renderQuickTargetDatesGrid(originDateStr) {
   const candidates = [];
 
   for (let dateStr = w.min; dateStr <= w.max; dateStr = addDays(dateStr, 1)) {
-    if (dateStr < today || dateStr === originDateStr) continue;
+    if (dateStr < today || dateStr === originDateStr || dateStr === fromDateStr) continue;
     const dayName = getDayName(dateStr);
     if (dayName === '日') continue; // 日曜休み
 
@@ -1531,7 +1556,7 @@ function onQuickCustomDateSelect(val) {
 function updateQuickDateMessage() {
   const msgEl = document.getElementById('quick-date-error');
   const target = document.getElementById('quick-selected-target-date').value;
-  const msg = getTransferDateMessage(target, quickSelectedOriginDate, currentMemberName, quickExtensionMode);
+  const msg = getTransferDateMessage(target, quickBaseOrigin || quickSelectedOriginDate, currentMemberName, quickExtensionMode, quickSelectedOriginDate);
   if (msgEl) {
     msgEl.textContent = msg;
     msgEl.style.display = msg ? 'block' : 'none';
@@ -1566,14 +1591,16 @@ function submitQuickExtension() {
   const reason = document.getElementById('quick-ext-reason').value.trim();
 
   if (!currentMemberName) { alert('ログインしてください。'); return; }
-  if (!targetDate) { alert('振替希望日を選択してください。'); return; }
-  const err = getTransferDateMessage(targetDate, originDate, currentMemberName, true);
+  if (!targetDate || targetDate === originDate) { alert('振替希望日を選択してください。'); return; }
+  // 振替し直しの延長申請も、最初の振替元を基準に判定する（申請の originalDate は今いる日）
+  const base = quickBaseOrigin || originDate;
+  const err = getTransferDateMessage(targetDate, base, currentMemberName, true, originDate);
   if (err) { alert(err); return; }
   if (!reason) { alert('延長が必要な理由を入力してください。'); return; }
   if (reason.length > 200) { alert('理由は200文字以内で入力してください。'); return; }
 
-  const dayName = getDayName(originDate);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(currentMemberName, dayName) >= maxReschedulePerDay) {
+  const dayName = getDayName(base);
+  if (!quickIsRetransfer && currentUserRole !== 'admin' && getRescheduleUsed(currentMemberName, dayName) >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
@@ -1610,43 +1637,53 @@ async function confirmQuickReschedule() {
     alert(SAME_DAY_LOCK_MSG);
     return;
   }
+  if (targetDate === originDate) {
+    alert('別の日付を正しく選択してください。');
+    return;
+  }
 
-  const err = getTransferDateMessage(targetDate, originDate, currentMemberName, false);
+  const originMembers = getShiftObjectsForDate(originDate);
+  const item = originMembers.find(m => normName(m.name) === normName(currentMemberName));
+  if (!item || !(item.type === 'fixed' || isRetransferItem(item))) {
+    alert(`振替対象のシフトが見つかりませんでした。画面を再読み込みしてください。`);
+    return;
+  }
+  // 振替済みの枠なら最初の振替元を基準にする（回数は消費しない）
+  const retransfer = isRetransferItem(item);
+  const base = getBaseOrigin(item, originDate);
+
+  const err = getTransferDateMessage(targetDate, base, currentMemberName, false, originDate);
   if (err) {
     alert(err);
     return;
   }
 
-  const dayName = getDayName(originDate);
+  const dayName = getDayName(base);
   const used = getRescheduleUsed(currentMemberName, dayName);
 
-  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
+  if (!retransfer && currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限（${maxReschedulePerDay}回）に達しています。`);
     return;
   }
 
-  const originMembers = getShiftObjectsForDate(originDate);
   if (currentUserRole !== 'admin' && originMembers.length - 1 < MIN_STAFF) {
     alert(`振替すると ${originDate} の参加者が ${originMembers.length - 1} 名となり、最低人数（${MIN_STAFF}名）を下回るため振替できません。\n事前に代理メンバーを立ててください。`);
     return;
   }
 
-  const item = originMembers.find(m => normName(m.name) === normName(currentMemberName));
-  if (!item) {
-    alert(`振替対象のシフトが見つかりませんでした。画面を再読み込みしてください。`);
-    return;
-  }
-
   // 振替実行
   removeMember(originDate, item);
-  addMember(targetDate, { name: currentMemberName, originDate, type: 'transfer' });
-  updateRescheduleCount(currentMemberName, dayName, 1);
+  addMember(targetDate, { name: currentMemberName, originDate: base, type: retransfer ? item.type : 'transfer' });
+  if (!retransfer) updateRescheduleCount(currentMemberName, dayName, 1);
 
   closeModal('quick-reschedule-modal');
   await saveStorage();
 
   const targetD = new Date(targetDate.replace(/-/g, '/'));
-  alert(`${currentMemberName}さんを ${targetD.getMonth() + 1}月${targetD.getDate()}日 (${getDayName(targetDate)}) へ振り替えました！\n（${dayName}曜枠 残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
+  const when = `${targetD.getMonth() + 1}月${targetD.getDate()}日 (${getDayName(targetDate)})`;
+  alert(retransfer
+    ? `${currentMemberName}さんを ${when} へ振替し直しました！\n（元の練習日: ${base}・振替回数は消費していません）`
+    : `${currentMemberName}さんを ${when} へ振り替えました！\n（${dayName}曜枠 残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
 }
 
 function jumpToShiftDetail(dateStr) {
@@ -2000,7 +2037,7 @@ function openRequestsModal() {
         <div class="request-card">
           <div>${badge} <strong style="font-size:14px;">${esc(req.name)}</strong></div>
           <div style="font-size:11px; color:var(--text-sub); margin-top:2px;">
-            対象日: ${esc(req.originalDate)}${isAbsent ? '' : ` ➔ 振替希望: ${esc(req.targetDate)}`}
+            対象日: ${esc(req.originalDate)}${isAbsent ? '' : ` ➔ 振替希望: ${esc(req.targetDate)}`}${requestRetransferNote(req)}
           </div>
           <div class="request-reason">理由: ${esc(req.reason)}</div>
           ${req.hasPhoto ? `<button type="button" class="btn-action" style="font-size:11px; margin-bottom:6px;" data-req-photo data-id="${id}">📷 添付写真を見る</button>` : ''}
@@ -2039,25 +2076,37 @@ function approveRequest(reqId) {
     return;
   }
 
+  // 振替済みの枠への申請なら、最初の振替元を引き継ぐ（振替回数は「transfer の枠」だけが消費している状態を保つ）
+  const retransfer = isRetransferItem(item);
+  const base = getBaseOrigin(item, req.originalDate);
+
   if (req.type === 'absent') {
     removeMember(req.originalDate, item);
     alert(`${req.name}さんの ${req.originalDate} の特例欠席を承認し、シフトから外しました。`);
   } else if (req.type === 'special_transfer') {
-    const err = validateTargetDate(req.targetDate, req.originalDate, req.name);
+    const err = req.targetDate === req.originalDate
+      ? '別の日付を正しく選択してください。'
+      : validateTargetDate(req.targetDate, base, req.name);
     if (err) { alert(`特別振替を実行できません：\n${err}`); return; }
 
     removeMember(req.originalDate, item);
-    addMember(req.targetDate, { name: req.name, originDate: req.originalDate, type: 'special_transfer' });
+    addMember(req.targetDate, { name: req.name, originDate: base, type: 'special_transfer' });
+    // 通常振替の枠を特別振替にした場合は、消費していた1回を戻す
+    if (item.type === 'transfer') updateRescheduleCount(req.name, getDayName(base), -1);
     alert(`${req.name}さんの特別振替（${req.originalDate} ➔ ${req.targetDate}）を承認しました。※振替回数は消費されません。`);
   } else if (req.type === 'extension_transfer') {
-    const err = validateTargetDate(req.targetDate, req.originalDate, req.name) || checkNotFixedDay(req.targetDate, req.name);
+    const err = req.targetDate === req.originalDate
+      ? '別の日付を正しく選択してください。'
+      : validateTargetDate(req.targetDate, base, req.name) || checkNotFixedDay(req.targetDate, req.name);
     if (err) { alert(`振替日程延長を実行できません：\n${err}`); return; }
 
-    // 通常振替として確定（振替回数を消費・履歴から取り消し可能）
+    // 振替として確定（新規の振替なら回数を消費。振替し直しなら枠の種類と元の日を引き継ぎ、回数は消費しない）
     removeMember(req.originalDate, item);
-    addMember(req.targetDate, { name: req.name, originDate: req.originalDate, type: 'transfer' });
-    updateRescheduleCount(req.name, getDayName(req.originalDate), 1);
-    alert(`${req.name}さんの振替日程延長（${req.originalDate} ➔ ${req.targetDate}）を承認し、振替を確定しました。`);
+    addMember(req.targetDate, { name: req.name, originDate: base, type: retransfer ? item.type : 'transfer' });
+    if (!retransfer) updateRescheduleCount(req.name, getDayName(base), 1);
+    alert(retransfer
+      ? `${req.name}さんの振替日程延長（${req.originalDate} ➔ ${req.targetDate}、元の練習日 ${base}）を承認し、振替し直しを確定しました。`
+      : `${req.name}さんの振替日程延長（${req.originalDate} ➔ ${req.targetDate}）を承認し、振替を確定しました。`);
   } else {
     return;
   }
@@ -2079,6 +2128,8 @@ function rejectRequest(reqId) {
 }
 
 /* ============ 通常振替 ============ */
+let rescheduleBaseOrigin = ''; // 通常振替モーダルの基準日（振替し直しなら最初の振替元）
+
 function openRescheduleModal(name, index) {
   if (!canOperateOn(name)) {
     alert('ご自身のシフトのみ振替できます。');
@@ -2088,8 +2139,11 @@ function openRescheduleModal(name, index) {
     alert(SAME_DAY_LOCK_MSG);
     return;
   }
-  const dayName = getDayName(selectedDateStr);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
+  const item = getShiftObjectsForDate(selectedDateStr)[index];
+  const retransfer = isRetransferItem(item);
+  const base = getBaseOrigin(item, selectedDateStr);
+  const dayName = getDayName(base);
+  if (!retransfer && currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
     alert(`${name}さんの【${dayName}曜日枠】の振替上限（${maxReschedulePerDay}回）に達しています。\n上限を超える場合は「特例申請」ボタンから管理者に申請してください。`);
     return;
   }
@@ -2097,16 +2151,20 @@ function openRescheduleModal(name, index) {
     alert(`振替すると ${selectedDateStr} が${MIN_STAFF}名未満になります。\n代理を立ててください。`);
     return;
   }
-  document.getElementById('reschedule-modal-title').textContent = `【通常振替】${name}さん`;
+  rescheduleBaseOrigin = base;
+  document.getElementById('reschedule-modal-title').textContent = retransfer
+    ? `【振替し直し】${name}さん（元の練習日: ${base}）`
+    : `【通常振替】${name}さん`;
   document.getElementById('reschedule-member-name').value = name;
   document.getElementById('reschedule-member-index').value = index;
   document.getElementById('reschedule-date-input').value = selectedDateStr;
   setMinDate('reschedule-date-input');
   setExtensionMode(false);
-  const w = getTransferWindow(selectedDateStr);
+  const w = getTransferWindow(base);
   const hint = document.getElementById('reschedule-range-hint');
-  const notOpen = getTransferNotOpenMsg(selectedDateStr);
+  const notOpen = getTransferNotOpenMsg(base);
   if (hint) hint.innerHTML = `振替可能期間: ${esc(w.min)} 〜 ${esc(w.max)}（ご自身の固定曜日を除く）`
+    + (retransfer ? `<br>※振替し直しは元の練習日（${esc(base)}）が基準です。振替回数は消費しません。` : '')
     + (notOpen ? `<br><span style="color:var(--danger);">※${esc(notOpen)}（振替日程延長の申請は可能）</span>` : '');
   updateRescheduleDateMessage();
   document.getElementById('reschedule-modal').style.display = 'flex';
@@ -2125,29 +2183,23 @@ function executeReschedule() {
 
   const members = getShiftObjectsForDate(selectedDateStr);
   const item = members[index];
-  if (!item || item.name !== name || item.type !== 'fixed') {
+  if (!item || item.name !== name || !(item.type === 'fixed' || isRetransferItem(item))) {
     alert('対象のメンバー情報が変わっています。画面を確認してやり直してください。');
     closeModal('reschedule-modal');
     return;
   }
+  const retransfer = isRetransferItem(item);
+  const base = getBaseOrigin(item, selectedDateStr);
 
   if (isSameDayLocked(selectedDateStr)) { alert(SAME_DAY_LOCK_MSG); return; }
-  const notOpen = getTransferNotOpenMsg(selectedDateStr);
-  if (notOpen) { alert(notOpen); return; }
+  if (!targetDate || targetDate === selectedDateStr) { alert('別の日付を正しく選択してください。'); return; }
 
-  const err = validateTargetDate(targetDate, selectedDateStr, name);
+  const err = getTransferDateMessage(targetDate, base, name, false, selectedDateStr);
   if (err) { alert(err); return; }
 
-  const fixedErr = checkNotFixedDay(targetDate, name);
-  if (fixedErr) { alert(fixedErr); return; }
-  if (!isWithinTransferWindow(targetDate, selectedDateStr)) {
-    alert('振替可能期間外です。期間内の日程を選ぶか、「振替日程延長」から申請してください。');
-    return;
-  }
-
-  const dayName = getDayName(selectedDateStr);
+  const dayName = getDayName(base);
   const used = getRescheduleUsed(name, dayName);
-  if (currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
+  if (!retransfer && currentUserRole !== 'admin' && used >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
@@ -2159,17 +2211,41 @@ function executeReschedule() {
   }
 
   removeMember(selectedDateStr, item);
-  addMember(targetDate, { name, originDate: selectedDateStr, type: 'transfer' });
-  updateRescheduleCount(name, dayName, 1);
+  addMember(targetDate, { name, originDate: base, type: retransfer ? item.type : 'transfer' });
+  if (!retransfer) updateRescheduleCount(name, dayName, 1);
 
   closeModal('reschedule-modal');
   saveStorage();
-  alert(`${name}さんを ${targetDate} へ振替しました。\n（${dayName}曜枠 振替残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
+  alert(retransfer
+    ? `${name}さんを ${targetDate} へ振替し直しました。\n（元の練習日: ${base}・振替回数は消費していません）`
+    : `${name}さんを ${targetDate} へ振替しました。\n（${dayName}曜枠 振替残り: ${Math.max(0, maxReschedulePerDay - (used + 1))}回）`);
+}
+
+/* ---- 振替し直し ----
+   振替済みの枠（transfer / special_transfer）も、もう一度振り替えられる。
+   その場合、振替可能期間・受付開始・延長申請は「最初の振替元の日付」（item.originDate）を基準にし、
+   振替回数は消費しない（同じ1回分の振替の行き先を変えるだけ）。 */
+function isRetransferItem(item) {
+  return !!item && (item.type === 'transfer' || item.type === 'special_transfer') && !!item.originDate;
+}
+
+// 振替の基準になる日付（通常はその日、振替済みの枠なら最初の振替元）
+function getBaseOrigin(item, date) {
+  return isRetransferItem(item) ? item.originDate : date;
+}
+
+// 申請の対象が振替済みの枠なら「（振替し直し・元の練習日 …）」を返す（申請一覧の表示用、HTMLエスケープ済み）
+function requestRetransferNote(req) {
+  if (req.type === 'absent') return '';
+  const item = getShiftObjectsForDate(req.originalDate).find(m => m.name === req.name);
+  return isRetransferItem(item) ? `（振替し直し・元の練習日 ${esc(item.originDate)}）` : '';
 }
 
 // 振替先の日付がルール違反なら理由を返す（通常振替/延長申請の両モーダルで共通）
-function getTransferDateMessage(target, origin, name, extension) {
-  if (!target || target === origin) return '';
+// origin: 基準日（最初の振替元）、from: 今その人がいる日（振替し直しのときだけ origin と異なる）
+function getTransferDateMessage(target, origin, name, extension, from = origin) {
+  if (!target || target === from) return '';
+  if (target === origin) return `元の練習日（${origin}）に戻す場合は「振替取消」を使ってください。`;
   if (!extension) {
     const notOpen = getTransferNotOpenMsg(origin);
     if (notOpen) return notOpen;
@@ -2191,7 +2267,7 @@ function updateRescheduleDateMessage() {
   const name = document.getElementById('reschedule-member-name').value;
   const target = document.getElementById('reschedule-date-input').value;
 
-  const msg = getTransferDateMessage(target, selectedDateStr, name, extension);
+  const msg = getTransferDateMessage(target, rescheduleBaseOrigin || selectedDateStr, name, extension, selectedDateStr);
   msgEl.textContent = msg;
   msgEl.style.display = msg ? 'block' : 'none';
   ['reschedule-confirm', 'reschedule-ext-submit'].forEach(id => {
@@ -2238,23 +2314,23 @@ function submitExtensionRequest() {
     return;
   }
   const item = getShiftObjectsForDate(selectedDateStr)[index];
-  if (!item || item.name !== name || item.type !== 'fixed') {
+  if (!item || item.name !== name || !(item.type === 'fixed' || isRetransferItem(item))) {
     alert('対象のメンバー情報が変わっています。画面を確認してやり直してください。');
     closeModal('reschedule-modal');
     return;
   }
+  // 振替し直しの延長申請も、最初の振替元を基準に判定する（申請の originalDate は今いる日）
+  const retransfer = isRetransferItem(item);
+  const base = getBaseOrigin(item, selectedDateStr);
 
-  const err = validateTargetDate(targetDate, selectedDateStr, name) || checkNotFixedDay(targetDate, name);
+  if (!targetDate || targetDate === selectedDateStr) { alert('別の日付を正しく選択してください。'); return; }
+  const err = getTransferDateMessage(targetDate, base, name, true, selectedDateStr);
   if (err) { alert(err); return; }
-  if (isWithinTransferWindow(targetDate, selectedDateStr)) {
-    alert('この日程は振替可能期間内です。「振替を確定する」で振替してください。');
-    return;
-  }
   if (!reason) { alert('延長が必要な理由を入力してください。'); return; }
   if (reason.length > 200) { alert('理由は200文字以内で入力してください。'); return; }
 
-  const dayName = getDayName(selectedDateStr);
-  if (currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
+  const dayName = getDayName(base);
+  if (!retransfer && currentUserRole !== 'admin' && getRescheduleUsed(name, dayName) >= maxReschedulePerDay) {
     alert(`${dayName}曜日枠の振替上限に達しています。`);
     return;
   }
